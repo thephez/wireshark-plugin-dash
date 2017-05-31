@@ -9,3 +9,7 @@ A Dash protocol dissector converted from the bitcoin built-in dissector and upda
 
 ## Releases
  - Currently the plugin has only been built on Linux Mint 64 bit.  A binary can be downloaded from the [releases page](https://github.com/thephez/wireshark-plugin-dash/releases/latest).
+
+## Capture screenshot
+This shows a dissected Masternode Ping message. The packet also contains a Governance Vote.  Most Dash specific messages are not fully dissected, but all should be recognized.
+![](plugins/dash/wireshark-dash-dissection.png)
