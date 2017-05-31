@@ -4,5 +4,5 @@ A Dash protocol dissector converted from the bitcoin built-in dissector and upda
 ## To Build (on Linux Mint 17.3)
  - Clone Wireshark from [https://github.com/wireshark/wireshark](https://github.com/wireshark/wireshark) 
  - Clone this plugin repository
- - From this repository, copy CMakeListsCustom.txt / the plugins folder and paste into the root of the cloned Wireshark folder
+ - From this repository, copy *CMakeListsCustom.txt* / the *plugins* folder and paste into the root of the cloned Wireshark folder
  - Follow the Wireshark build instructions
