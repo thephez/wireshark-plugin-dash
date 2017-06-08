@@ -7,6 +7,8 @@ A Dash protocol dissector converted from the bitcoin built-in dissector and upda
  - From this repository, copy *CMakeListsCustom.txt* / the *plugins* folder and paste into the root of the cloned Wireshark folder
  - Follow the Wireshark build instructions
 
+Note: This was built with Wireshark 2.3.  To use with Wireshark 2.2 it is necessary to build using the master-2.2 branch of this repository
+
 ## Releases
  - Currently the plugin has only been built on Linux Mint 64 bit.  A binary can be downloaded from the [releases page](https://github.com/thephez/wireshark-plugin-dash/releases/latest).
 
