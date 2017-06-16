@@ -660,6 +660,10 @@ static header_field_info hfi_msg_mnp_vchsig DASH_HFI_INIT =
 static header_field_info hfi_dash_msg_mnw DASH_HFI_INIT =
   { "Masternode Payment Vote message", "dash.mnw", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
+static header_field_info hfi_dash_msg_mnw_payheight DASH_HFI_INIT =
+  { "Block pay height", "dash.mnw.height", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+
 /* mnwb - Masternode Payment Block
 
 */
@@ -1963,10 +1967,57 @@ dissect_dash_msg_mnw(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
 {
   proto_item *ti;
   guint32     offset = 0;
-  //gint        count_length;
+  gint        count_length;
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnw, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+    // vin (CTxIn) [41]
+  proto_tree *subtree;
+  proto_tree *prevtree;
+  proto_item *pti;
+  guint64     script_length;
+  guint32     scr_len_offset;
+
+  scr_len_offset = offset+36;
+  get_varint(tvb, scr_len_offset, &count_length, &script_length);
+
+  /* A funny script_length won't cause an exception since the field type is FT_NONE */
+  ti = proto_tree_add_item(tree, &hfi_msg_tx_in, tvb, offset,
+      36 + count_length + (guint)script_length + 4, ENC_NA);
+  subtree = proto_item_add_subtree(ti, ett_tx_in_list);
+
+  /* previous output */
+  pti = proto_tree_add_item(subtree, &hfi_msg_tx_in_prev_output, tvb, offset, 36, ENC_NA);
+  prevtree = proto_item_add_subtree(pti, ett_tx_in_outp);
+
+  proto_tree_add_item(prevtree, &hfi_msg_tx_in_prev_outp_hash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  proto_tree_add_item(prevtree, &hfi_msg_tx_in_prev_outp_index, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+  /* end previous output */
+
+  add_varint_item(subtree, tvb, offset, count_length, &hfi_msg_tx_in_script8, &hfi_msg_tx_in_script16,
+                  &hfi_msg_tx_in_script32, &hfi_msg_tx_in_script64);
+
+  offset += count_length;
+
+  if ((offset + script_length) > G_MAXINT) {
+    proto_tree_add_expert(tree, pinfo, &ei_dash_script_len,
+        tvb, scr_len_offset, count_length);
+    return G_MAXINT;
+  }
+
+  proto_tree_add_item(subtree, &hfi_msg_tx_in_sig_script, tvb, offset, (guint)script_length, ENC_NA);
+  offset += (guint)script_length;
+
+  proto_tree_add_item(subtree, &hfi_msg_tx_in_seq, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  // Block Height
+  proto_tree_add_item(tree, &hfi_dash_msg_mnw_payheight, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
 
   return offset;
 }
@@ -2499,6 +2550,7 @@ proto_register_dash(void)
 
     /* mnw message */
     &hfi_dash_msg_mnw,
+    &hfi_dash_msg_mnw_payheight,
 
     /* mnwb message */
     &hfi_dash_msg_mnwb,
@@ -2620,7 +2672,8 @@ proto_reg_handoff_dash(void)
 {
   dissector_handle_t command_handle;
 
-  dissector_add_for_decode_as_with_preference("tcp.port", dash_handle);
+  //dissector_add_for_decode_as_with_preference("tcp.port", dash_handle); // Only supported by 
+  dissector_add_for_decode_as("tcp.port", dash_handle);
 
   heur_dissector_add( "tcp", dissect_dash_heur, "Dash over TCP", "dash_tcp", hfi_dash->id, HEURISTIC_ENABLE);
 
