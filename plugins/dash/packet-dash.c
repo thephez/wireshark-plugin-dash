@@ -2672,8 +2672,7 @@ proto_reg_handoff_dash(void)
 {
   dissector_handle_t command_handle;
 
-  //dissector_add_for_decode_as_with_preference("tcp.port", dash_handle); // Only supported by 
-  dissector_add_for_decode_as("tcp.port", dash_handle);
+  dissector_add_for_decode_as_with_preference("tcp.port", dash_handle);
 
   heur_dissector_add( "tcp", dissect_dash_heur, "Dash over TCP", "dash_tcp", hfi_dash->id, HEURISTIC_ENABLE);
 
