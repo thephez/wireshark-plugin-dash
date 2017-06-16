@@ -337,7 +337,7 @@ static header_field_info hfi_msg_tx_in DASH_HFI_INIT =
   { "Transaction input", "dash.tx.in", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_tx_in_prev_output DASH_HFI_INIT =
-  { "Previous output", "dash.tx.in.prev_output", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+  { "Previous output (UTXO)", "dash.tx.in.prev_output", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_tx_in_prev_outp_hash DASH_HFI_INIT =
   { "Hash", "dash.tx.in.prev_output.hash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -955,6 +955,78 @@ static void add_varint_item(proto_tree *tree, tvbuff_t *tvb, const gint offset, 
     proto_tree_add_item(tree, hfi64, tvb, offset+1, 8, ENC_LITTLE_ENDIAN);
     break;
   }
+}
+
+/**
+ * Create a sub-tree and fill it with a CTxIn structure
+ */
+static int //proto_tree *
+create_ctxin_tree(tvbuff_t *tvb, proto_item *ti, guint32 offset)
+{
+  proto_tree *tree;
+
+  tree = proto_item_add_subtree(ti, ett_address);
+
+  //proto_item *rti;
+  gint        count_length;
+  //guint64     in_count;
+  //guint64     out_count;
+
+  /* TxIn
+   *   [36]  previous_output    outpoint
+   *   [1+]  script length      var_int
+   *   [ ?]  signature script   uchar[]
+   *   [ 4]  sequence           uint32_t
+   *
+   */
+
+  //gint        varint_length;
+  //guint64     varint;
+
+  proto_tree *subtree;
+  proto_tree *prevtree;
+  proto_item *pti;
+  guint64     script_length;
+  guint32     scr_len_offset;
+
+  scr_len_offset = offset + 36;
+  get_varint(tvb, scr_len_offset, &count_length, &script_length);
+
+  /* A funny script_length won't cause an exception since the field type is FT_NONE */
+  ti = proto_tree_add_item(tree, &hfi_msg_tx_in, tvb, offset,
+      36 + (guint)script_length + 4, ENC_NA);
+      //36 + count_length + (guint)script_length + 4, ENC_NA);
+  subtree = proto_item_add_subtree(ti, ett_tx_in_list);
+
+  /* previous output */
+  pti = proto_tree_add_item(subtree, &hfi_msg_tx_in_prev_output, tvb, offset, 36, ENC_NA);
+  prevtree = proto_item_add_subtree(pti, ett_tx_in_outp);
+
+  proto_tree_add_item(prevtree, &hfi_msg_tx_in_prev_outp_hash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  proto_tree_add_item(prevtree, &hfi_msg_tx_in_prev_outp_index, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+  /* end previous output */
+
+  add_varint_item(subtree, tvb, offset, count_length, &hfi_msg_tx_in_script8, &hfi_msg_tx_in_script16,
+                  &hfi_msg_tx_in_script32, &hfi_msg_tx_in_script64);
+
+  offset += count_length;
+
+//  if ((offset + script_length) > G_MAXINT) {
+//    proto_tree_add_expert(tree, pinfo, &ei_dash_script_len,
+//        tvb, scr_len_offset, count_length);
+//    return G_MAXINT;
+//  }
+
+  proto_tree_add_item(subtree, &hfi_msg_tx_in_sig_script, tvb, offset, (guint)script_length, ENC_NA);
+  offset += (guint)script_length;
+
+  proto_tree_add_item(subtree, &hfi_msg_tx_in_seq, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  return offset; //tree;
 }
 
 static proto_tree *
@@ -1889,53 +1961,56 @@ dissect_dash_msg_mnp(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
 {
   proto_item *ti;
   guint32     offset = 0;
-  gint        count_length;
+  //gint        count_length;
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnp, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
-  // vin (CTxIn) [41]
-  proto_tree *subtree;
-  proto_tree *prevtree;
-  proto_item *pti;
-  guint64     script_length;
-  guint32     scr_len_offset;
+   // Add unspent output of the Masternode that signed the message (CTxIn)
+  offset = create_ctxin_tree(tvb, ti, offset);
 
-  scr_len_offset = offset+36;
-  get_varint(tvb, scr_len_offset, &count_length, &script_length);
-
-  /* A funny script_length won't cause an exception since the field type is FT_NONE */
-  ti = proto_tree_add_item(tree, &hfi_msg_tx_in, tvb, offset,
-      36 + count_length + (guint)script_length + 4, ENC_NA);
-  subtree = proto_item_add_subtree(ti, ett_tx_in_list);
-
-  /* previous output */
-  pti = proto_tree_add_item(subtree, &hfi_msg_tx_in_prev_output, tvb, offset, 36, ENC_NA);
-  prevtree = proto_item_add_subtree(pti, ett_tx_in_outp);
-
-  proto_tree_add_item(prevtree, &hfi_msg_tx_in_prev_outp_hash, tvb, offset, 32, ENC_NA);
-  offset += 32;
-
-  proto_tree_add_item(prevtree, &hfi_msg_tx_in_prev_outp_index, tvb, offset, 4, ENC_LITTLE_ENDIAN);
-  offset += 4;
-  /* end previous output */
-
-  add_varint_item(subtree, tvb, offset, count_length, &hfi_msg_tx_in_script8, &hfi_msg_tx_in_script16,
-                  &hfi_msg_tx_in_script32, &hfi_msg_tx_in_script64);
-
-  offset += count_length;
-
-  if ((offset + script_length) > G_MAXINT) {
-    proto_tree_add_expert(tree, pinfo, &ei_dash_script_len,
-        tvb, scr_len_offset, count_length);
-    return G_MAXINT;
-  }
-
-  proto_tree_add_item(subtree, &hfi_msg_tx_in_sig_script, tvb, offset, (guint)script_length, ENC_NA);
-  offset += (guint)script_length;
-
-  proto_tree_add_item(subtree, &hfi_msg_tx_in_seq, tvb, offset, 4, ENC_LITTLE_ENDIAN);
-  offset += 4;
+//  // vin (CTxIn) [41]
+//  proto_tree *subtree;
+//  proto_tree *prevtree;
+//  proto_item *pti;
+//  guint64     script_length;
+//  guint32     scr_len_offset;
+//
+//  scr_len_offset = offset+36;
+//  get_varint(tvb, scr_len_offset, &count_length, &script_length);
+//
+//  /* A funny script_length won't cause an exception since the field type is FT_NONE */
+//  ti = proto_tree_add_item(tree, &hfi_msg_tx_in, tvb, offset,
+//      36 + count_length + (guint)script_length + 4, ENC_NA);
+//  subtree = proto_item_add_subtree(ti, ett_tx_in_list);
+//
+//  /* previous output */
+//  pti = proto_tree_add_item(subtree, &hfi_msg_tx_in_prev_output, tvb, offset, 36, ENC_NA);
+//  prevtree = proto_item_add_subtree(pti, ett_tx_in_outp);
+//
+//  proto_tree_add_item(prevtree, &hfi_msg_tx_in_prev_outp_hash, tvb, offset, 32, ENC_NA);
+//  offset += 32;
+//
+//  proto_tree_add_item(prevtree, &hfi_msg_tx_in_prev_outp_index, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+//  offset += 4;
+//  /* end previous output */
+//
+//  add_varint_item(subtree, tvb, offset, count_length, &hfi_msg_tx_in_script8, &hfi_msg_tx_in_script16,
+//                  &hfi_msg_tx_in_script32, &hfi_msg_tx_in_script64);
+//
+//  offset += count_length;
+//
+//  if ((offset + script_length) > G_MAXINT) {
+//    proto_tree_add_expert(tree, pinfo, &ei_dash_script_len,
+//        tvb, scr_len_offset, count_length);
+//    return G_MAXINT;
+//  }
+//
+//  proto_tree_add_item(subtree, &hfi_msg_tx_in_sig_script, tvb, offset, (guint)script_length, ENC_NA);
+//  offset += (guint)script_length;
+//
+//  proto_tree_add_item(subtree, &hfi_msg_tx_in_seq, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+//  offset += 4;
 
   // Block Hash - Current chaintip blockhash minus 12
   proto_tree_add_item(tree, &hfi_msg_mnp_blockhash, tvb, offset, 32, ENC_NA);
@@ -1964,6 +2039,9 @@ dissect_dash_msg_mnb(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnb, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
+  // Add unspent output of the Masternode that signed the message (CTxIn)
+  offset = create_ctxin_tree(tvb, ti, offset);
+
   return offset;
 }
 
@@ -1975,53 +2053,13 @@ dissect_dash_msg_mnw(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
 {
   proto_item *ti;
   guint32     offset = 0;
-  gint        count_length;
+  //gint        count_length;
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnw, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
-    // vin (CTxIn) [41]
-  proto_tree *subtree;
-  proto_tree *prevtree;
-  proto_item *pti;
-  guint64     script_length;
-  guint32     scr_len_offset;
-
-  scr_len_offset = offset+36;
-  get_varint(tvb, scr_len_offset, &count_length, &script_length);
-
-  /* A funny script_length won't cause an exception since the field type is FT_NONE */
-  ti = proto_tree_add_item(tree, &hfi_msg_tx_in, tvb, offset,
-      36 + count_length + (guint)script_length + 4, ENC_NA);
-  subtree = proto_item_add_subtree(ti, ett_tx_in_list);
-
-  /* previous output */
-  pti = proto_tree_add_item(subtree, &hfi_msg_tx_in_prev_output, tvb, offset, 36, ENC_NA);
-  prevtree = proto_item_add_subtree(pti, ett_tx_in_outp);
-
-  proto_tree_add_item(prevtree, &hfi_msg_tx_in_prev_outp_hash, tvb, offset, 32, ENC_NA);
-  offset += 32;
-
-  proto_tree_add_item(prevtree, &hfi_msg_tx_in_prev_outp_index, tvb, offset, 4, ENC_LITTLE_ENDIAN);
-  offset += 4;
-  /* end previous output */
-
-  add_varint_item(subtree, tvb, offset, count_length, &hfi_msg_tx_in_script8, &hfi_msg_tx_in_script16,
-                  &hfi_msg_tx_in_script32, &hfi_msg_tx_in_script64);
-
-  offset += count_length;
-
-  if ((offset + script_length) > G_MAXINT) {
-    proto_tree_add_expert(tree, pinfo, &ei_dash_script_len,
-        tvb, scr_len_offset, count_length);
-    return G_MAXINT;
-  }
-
-  proto_tree_add_item(subtree, &hfi_msg_tx_in_sig_script, tvb, offset, (guint)script_length, ENC_NA);
-  offset += (guint)script_length;
-
-  proto_tree_add_item(subtree, &hfi_msg_tx_in_seq, tvb, offset, 4, ENC_LITTLE_ENDIAN);
-  offset += 4;
+  // Add unspent output of the Masternode that signed the message (CTxIn)
+  offset = create_ctxin_tree(tvb, ti, offset);
 
   // Block Height
   proto_tree_add_item(tree, &hfi_dash_msg_mnw_payheight, tvb, offset, 4, ENC_LITTLE_ENDIAN);
