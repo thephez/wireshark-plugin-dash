@@ -565,7 +565,13 @@ static header_field_info hfi_msg_merkleblock_flags_data DASH_HFI_INIT =
 
 /* services */
 static header_field_info hfi_services_network DASH_HFI_INIT =
-  { "Network node", "dash.services.network", FT_BOOLEAN, 32, TFS(&tfs_set_notset), 0x1, NULL, HFILL };
+  { "Network", "dash.services.network", FT_BOOLEAN, 32, TFS(&tfs_set_notset), 0x1, NULL, HFILL };
+
+static header_field_info hfi_services_getutxo DASH_HFI_INIT =
+  { "Get UTXO", "dash.services.getutxo", FT_BOOLEAN, 32, TFS(&tfs_set_notset), 0x2, NULL, HFILL };
+
+static header_field_info hfi_services_bloom DASH_HFI_INIT =
+  { "Bloom filter", "dash.services.bloom", FT_BOOLEAN, 32, TFS(&tfs_set_notset), 0x4, NULL, HFILL };
 
 /* address */
 static header_field_info hfi_address_services DASH_HFI_INIT =
@@ -860,6 +866,8 @@ create_services_tree(tvbuff_t *tvb, proto_item *ti, guint32 offset)
 
   /* service = NODE_NETWORK */
   proto_tree_add_boolean(tree, &hfi_services_network, tvb, offset, 4, (guint32)services);
+  proto_tree_add_boolean(tree, &hfi_services_getutxo, tvb, offset, 4, (guint32)services);
+  proto_tree_add_boolean(tree, &hfi_services_bloom, tvb, offset, 4, (guint32)services);
 
   /* end of services */
 
@@ -2519,6 +2527,8 @@ proto_register_dash(void)
 
     /* services */
     &hfi_services_network,
+    &hfi_services_getutxo,
+    &hfi_services_bloom,
 
     /* address */
     &hfi_address_services,
