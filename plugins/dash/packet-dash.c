@@ -102,6 +102,55 @@ static const value_string filterload_nflags[] =
   { 0, NULL }
 };
 
+static const value_string vote_outcome[] =
+{
+  { 0x01, "VOTE_OUTCOME_NONE" },
+  { 0x02, "VOTE_OUTCOME_YES" },
+  { 0x03, "VOTE_OUTCOME_NO" },
+  { 0x04, "VOTE_OUTCOME_ABSTAIN" },
+};
+
+static const value_string vote_signal[] =
+{
+  { 0x00, "VOTE_SIGNAL_NONE" }, //   -- fund this object for it's stated amount
+  { 0x01, "VOTE_SIGNAL_FUNDING" }, //   -- this object checks out in sentinel engine
+  { 0x02, "VOTE_SIGNAL_VALID" }, //   -- this object should be deleted from memory entirely
+  { 0x03, "VOTE_SIGNAL_DELETE" },
+  { 0x04, "VOTE_SIGNAL_ENDORSED" }, //   -- officially endorsed by the network somehow (delegation)
+  { 0x05, "VOTE_SIGNAL_NOOP1" }, // FOR FURTHER EXPANSION
+  { 0x06, "VOTE_SIGNAL_NOOP2" },
+  { 0x07, "VOTE_SIGNAL_NOOP3" },
+  { 0x08, "VOTE_SIGNAL_NOOP4" },
+  { 0x09, "VOTE_SIGNAL_NOOP5" },
+  { 0x10, "VOTE_SIGNAL_NOOP6" },
+  { 0x11, "VOTE_SIGNAL_NOOP7" },
+  { 0x12, "VOTE_SIGNAL_NOOP8" },
+  { 0x13, "VOTE_SIGNAL_NOOP9" },
+  { 0x14, "VOTE_SIGNAL_NOOP10" },
+  { 0x15, "VOTE_SIGNAL_NOOP11" },
+
+  { 0x16, "VOTE_SIGNAL_CUSTOM1" }, // SENTINEL CUSTOM ACTIONS
+  { 0x17, "VOTE_SIGNAL_CUSTOM2" }, //        16-35
+  { 0x18, "VOTE_SIGNAL_CUSTOM3" },
+  { 0x19, "VOTE_SIGNAL_CUSTOM4" },
+  { 0x20, "VOTE_SIGNAL_CUSTOM5" },
+  { 0x21, "VOTE_SIGNAL_CUSTOM6" },
+  { 0x22, "VOTE_SIGNAL_CUSTOM7" },
+  { 0x23, "VOTE_SIGNAL_CUSTOM8" },
+  { 0x24, "VOTE_SIGNAL_CUSTOM9" },
+  { 0x25, "VOTE_SIGNAL_CUSTOM10" },
+  { 0x26, "VOTE_SIGNAL_CUSTOM11" },
+  { 0x27, "VOTE_SIGNAL_CUSTOM12" },
+  { 0x28, "VOTE_SIGNAL_CUSTOM13" },
+  { 0x29, "VOTE_SIGNAL_CUSTOM14" },
+  { 0x30, "VOTE_SIGNAL_CUSTOM15" },
+  { 0x31, "VOTE_SIGNAL_CUSTOM16" },
+  { 0x32, "VOTE_SIGNAL_CUSTOM17" },
+  { 0x33, "VOTE_SIGNAL_CUSTOM18" },
+  { 0x34, "VOTE_SIGNAL_CUSTOM19" },
+  { 0x35, "VOTE_SIGNAL_CUSTOM20" },
+};
+
 /*
  * Minimum dash identification header.
  * - Magic - 4 bytes
@@ -779,6 +828,22 @@ static header_field_info hfi_dash_msg_govobj DASH_HFI_INIT =
 */
 static header_field_info hfi_dash_msg_govobjvote DASH_HFI_INIT =
   { "Masternode Governance Vote message", "dash.govobjvote", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_govobjvote_parenthash DASH_HFI_INIT =
+  { "Parent hash", "dash.govobjvote.parenthash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_govobjvote_voteoutcome DASH_HFI_INIT =
+  { "Vote Outcome", "dash.govobjvote.voteoutcome", FT_UINT32, BASE_DEC, VALS(vote_outcome), 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_govobjvote_votesignal DASH_HFI_INIT =
+  { "Vote Signal", "dash.govobjvote.votesignal", FT_UINT32, BASE_DEC, VALS(vote_signal), 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_govobjvote_createtime DASH_HFI_INIT =
+  { "Vote created timestamp", "dash.govobjvote.createtime", FT_ABSOLUTE_TIME, ABSOLUTE_TIME_LOCAL, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_govobjvote_vchsig DASH_HFI_INIT =
+  { "Masternode Signature", "dash.govobjvote.vchsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
 
 /* govsync - Governance Sync
 	
@@ -1978,6 +2043,10 @@ dissect_dash_msg_mnw(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   proto_tree_add_item(tree, &hfi_dash_msg_mnw_payheight, tvb, offset, 4, ENC_LITTLE_ENDIAN);
   offset += 4;
 
+  // Payee address (CScript)
+
+  // Signature of Masternode signing message (char[])
+
   return offset;
 }
 
@@ -2172,6 +2241,28 @@ dissect_dash_msg_govobjvote(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_govobjvote, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  // Unspent output for the masternode which is voting (CTxIn)
+  offset = create_ctxin_tree(tvb, ti, offset);
+
+  // Block Hash - Current chaintip blockhash minus 12
+  proto_tree_add_item(tree, &hfi_msg_govobjvote_parenthash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  // Vote Outcome
+  proto_tree_add_item(tree, &hfi_msg_govobjvote_voteoutcome, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  // Vote Signal
+  proto_tree_add_item(tree, &hfi_msg_govobjvote_votesignal, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  // nTime - Vote create time
+  proto_tree_add_item(tree, &hfi_msg_govobjvote_createtime, tvb, offset, 8, ENC_LITTLE_ENDIAN);
+  offset += 8;
+
+  // vchSig - Signature of this message by masternode (verifiable via pubKeyMasternode)
+  proto_tree_add_item(tree, &hfi_msg_govobjvote_vchsig, tvb, offset, 66, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 66
 
   return offset;
 }
@@ -2560,6 +2651,11 @@ proto_register_dash(void)
 
     /* govobjvote message */
     &hfi_dash_msg_govobjvote,
+    &hfi_msg_govobjvote_parenthash,
+    &hfi_msg_govobjvote_voteoutcome,
+    &hfi_msg_govobjvote_votesignal,
+    &hfi_msg_govobjvote_createtime,
+    &hfi_msg_govobjvote_vchsig,
 
     /* govsync message */
     &hfi_dash_msg_govsync,
