@@ -58,6 +58,7 @@
 
 static const value_string inv_types[] =
 {
+  // // Defined in https://github.com/dashpay/dash/blob/master/src/protocol.h
   { 0, "ERROR" },
   { 1, "MSG_TX" },
   { 2, "MSG_BLOCK" },
@@ -83,6 +84,7 @@ static const value_string inv_types[] =
 
 static const value_string reject_ccode[] =
 {
+  // Defined in https://github.com/dashpay/dash/blob/master/src/consensus/validation.h
   { 0x01, "REJECT_MALFORMED" },
   { 0x10, "REJECT_INVALID" },
   { 0x11, "REJECT_OBSOLETE" },
@@ -96,14 +98,20 @@ static const value_string reject_ccode[] =
 
 static const value_string filterload_nflags[] =
 {
+  // Defined in https://github.com/dashpay/dash/blob/master/src/bloom.h
+  // enum bloomflags
   { 0, "BLOOM_UPDATE_NONE" },
   { 1, "BLOOM_UPDATE_ALL" },
   { 2, "BLOOM_UPDATE_P2PUBKEY_ONLY" },
+  { 3, "BLOOM_UPDATE_MASK" },
   { 0, NULL }
 };
 
 static const value_string vote_outcome[] =
 {
+  // Defined in src/governance-vote.cpp - vote_outcome_enum_t 
+  // https://github.com/dashpay/dash/blob/master/src/governance-vote.h
+
   { 0x01, "VOTE_OUTCOME_NONE" },
   { 0x02, "VOTE_OUTCOME_YES" },
   { 0x03, "VOTE_OUTCOME_NO" },
@@ -112,6 +120,9 @@ static const value_string vote_outcome[] =
 
 static const value_string vote_signal[] =
 {
+  // Defined in src/governance-vote.cpp - vote_signal_enum_t 
+  // https://github.com/dashpay/dash/blob/master/src/governance-vote.h
+
   { 0x00, "VOTE_SIGNAL_NONE" }, //   -- fund this object for it's stated amount
   { 0x01, "VOTE_SIGNAL_FUNDING" }, //   -- this object checks out in sentinel engine
   { 0x02, "VOTE_SIGNAL_VALID" }, //   -- this object should be deleted from memory entirely
@@ -149,6 +160,16 @@ static const value_string vote_signal[] =
   { 0x33, "VOTE_SIGNAL_CUSTOM18" },
   { 0x34, "VOTE_SIGNAL_CUSTOM19" },
   { 0x35, "VOTE_SIGNAL_CUSTOM20" },
+};
+
+static const value_string private_send_denomination[] =
+{
+  // Defined in src/darksend.cpp - InitDenominations() 
+  // https://github.com/dashpay/dash/blob/master/src/darksend.cpp
+  { 0x01, "10 DASH" },
+  { 0x02, "1 DASH" },
+  { 0x04, "0.1 DASH" },
+  { 0x08, "0.01 DASH" },
 };
 
 /*
@@ -755,7 +776,7 @@ static header_field_info hfi_dash_msg_dsq DASH_HFI_INIT =
   { "Darksend Queue message", "dash.dsq", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_dsq_denom DASH_HFI_INIT =
-  { "Denomination", "dash.dsq.denom", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+  { "Denomination", "dash.dsq.denom", FT_UINT32, BASE_DEC, VALS(private_send_denomination), 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_dsq_vin_prev_outp_hash DASH_HFI_INIT =
   { "Hash", "dash.dsq.vin.prev_output.hash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
