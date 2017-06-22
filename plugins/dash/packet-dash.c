@@ -881,6 +881,8 @@ static header_field_info hfi_dash_msg_spork DASH_HFI_INIT =
 
 /* dseg - ???
 	No documentation available
+    Per src/masternodeman.c - DsegUpdate:
+    41      vin         CTxIn       ???
 */
 static header_field_info hfi_dash_msg_dseg DASH_HFI_INIT =
   { "Dseg message", "dash.dseg", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -893,9 +895,14 @@ static header_field_info hfi_dash_msg_ssc DASH_HFI_INIT =
 
 /* mnget - Masternode Payment Sync
 	No documentation available
+    Per src/masternode-sync.c - PushMessage(NetMsgType::MASTERNODEPAYMENTSYNC, nMnCount):
+    4       nMnCount        int             Number of masternodes?
 */
 static header_field_info hfi_dash_msg_mnget DASH_HFI_INIT =
   { "Masternode Payment Sync message", "dash.mnget", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_dash_msg_mnget_count32 DASH_HFI_INIT =
+  { "Count", "dash.mnget.count", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
 static gint ett_dash = -1;
 static gint ett_dash_msg = -1;
@@ -2331,6 +2338,9 @@ dissect_dash_msg_dseg(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, v
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_dseg, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
+  // vin - Unspent output for the masternode which is voting (CTxIn)
+  offset = create_ctxin_tree(tvb, ti, offset);
+
   return offset;
 }
 
@@ -2360,6 +2370,9 @@ dissect_dash_msg_mnget(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, 
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnget, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_dash_msg_mnget_count32, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
 
   return offset;
 }
@@ -2693,6 +2706,7 @@ proto_register_dash(void)
 
     /* mnget message */
     &hfi_dash_msg_mnget,
+    &hfi_dash_msg_mnget_count32,
   };
 #endif
 
