@@ -764,6 +764,21 @@ static header_field_info hfi_dash_msg_dstx DASH_HFI_INIT =
 static header_field_info hfi_dash_msg_dssu DASH_HFI_INIT =
   { "Mixing Pool Status Update message", "dash.dssu", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
+static header_field_info hfi_dash_msg_dssu_session_id DASH_HFI_INIT =
+  { "Session ID", "dash.dssu.session", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_dash_msg_dssu_state DASH_HFI_INIT =
+  { "State", "dash.dssu.state", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_dash_msg_dssu_entries DASH_HFI_INIT =
+  { "Entries", "dash.dssu.entries", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_dash_msg_dssu_status_update DASH_HFI_INIT =
+  { "Status Update", "dash.dssu.update", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_dash_msg_dssu_message_id DASH_HFI_INIT =
+  { "Message ID", "dash.dssu.message", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
 /* dsq message - Darksend Queue 
 	Field Size 	Field Name 	Data type 	Description
 	4 		nDenom 		int 		Which denomination is allowed in this mixing session
@@ -2124,7 +2139,7 @@ dissect_dash_msg_dstx(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, v
 }
 
 /**
- * Handler for dssu messages
+ *  Handler for dssu messages (Mixing pool status update)
  */
 static int
 dissect_dash_msg_dssu(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
@@ -2134,6 +2149,21 @@ dissect_dash_msg_dssu(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, v
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_dssu, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_dash_msg_dssu_session_id, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  proto_tree_add_item(tree, &hfi_dash_msg_dssu_state, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  proto_tree_add_item(tree, &hfi_dash_msg_dssu_entries, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  proto_tree_add_item(tree, &hfi_dash_msg_dssu_status_update, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  proto_tree_add_item(tree, &hfi_dash_msg_dssu_message_id, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
 
   return offset;
 }
@@ -2648,6 +2678,11 @@ proto_register_dash(void)
 
     /* dssu message */
     &hfi_dash_msg_dssu,
+    &hfi_dash_msg_dssu_session_id,
+    &hfi_dash_msg_dssu_state,
+    &hfi_dash_msg_dssu_entries,
+    &hfi_dash_msg_dssu_status_update,
+    &hfi_dash_msg_dssu_message_id,
 
     /* dsq message */
     &hfi_dash_msg_dsq,
