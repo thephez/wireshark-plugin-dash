@@ -172,6 +172,23 @@ static const value_string private_send_denomination[] =
   { 0x08, "0.01 DASH" },
 };
 
+static const value_string spork_description[] =
+{
+  // Defined in src/spork.h 
+  // https://github.com/dashpay/dash/blob/master/src/spork.h
+  { 10001, "SPORK_2_INSTANTSEND_ENABLED" },
+  { 10002, "SPORK_3_INSTANTSEND_BLOCK_FILTERING" },
+  { 10004, "SPORK_5_INSTANTSEND_MAX_VALUE" },
+  { 10007, "SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT" },
+  { 10008, "SPORK_9_SUPERBLOCKS_ENABLED" },
+  { 10009, "SPORK_10_MASTERNODE_PAY_UPDATED_NODES" },
+  { 10011, "SPORK_12_RECONSIDER_BLOCKS" },
+  { 10012, "SPORK_13_OLD_SUPERBLOCK_FLAG" },
+  { 10013, "SPORK_14_REQUIRE_SENTINEL_FLAG" },
+
+};
+
+
 /*
  * Minimum dash identification header.
  * - Magic - 4 bytes
@@ -904,8 +921,16 @@ static header_field_info hfi_dash_msg_spork DASH_HFI_INIT =
   { "Spork message", "dash.spork", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_dash_msg_spork_id DASH_HFI_INIT =
-  { "Spork ID", "dash.spork.id", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+  { "Spork ID", "dash.spork.id", FT_UINT32, BASE_DEC, VALS(spork_description), 0x0, NULL, HFILL };
 
+static header_field_info hfi_dash_msg_spork_value DASH_HFI_INIT =
+  { "Value", "dash.spork.value", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_dash_msg_spork_sigtime DASH_HFI_INIT =
+  { "Signature timestamp", "dash.spork.sigtime", FT_ABSOLUTE_TIME, ABSOLUTE_TIME_LOCAL, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_dash_msg_spork_vchsig DASH_HFI_INIT =
+  { "Masternode Signature", "dash.spork.vchsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* dseg - ???
 	No documentation available
@@ -2381,6 +2406,16 @@ dissect_dash_msg_spork(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, 
   proto_tree_add_item(tree, &hfi_dash_msg_spork_id, tvb, offset, 4, ENC_LITTLE_ENDIAN);
   offset += 4;
 
+  proto_tree_add_item(tree, &hfi_dash_msg_spork_value, tvb, offset, 8, ENC_LITTLE_ENDIAN);
+  offset += 8;
+
+  // sigTime - Signature time for this spork
+  proto_tree_add_item(tree, &hfi_dash_msg_spork_sigtime, tvb, offset, 8, ENC_LITTLE_ENDIAN);
+  offset += 8;
+
+  // vchSig - 
+  proto_tree_add_item(tree, &hfi_dash_msg_spork_vchsig, tvb, offset, 66, ENC_NA);
+
   return offset;
 }
 
@@ -2764,6 +2799,9 @@ proto_register_dash(void)
     /* spork message */
     &hfi_dash_msg_spork,
     &hfi_dash_msg_spork_id,
+    &hfi_dash_msg_spork_value,
+    &hfi_dash_msg_spork_sigtime,
+    &hfi_dash_msg_spork_vchsig,
 
     /* dseg message */
     &hfi_dash_msg_dseg,
