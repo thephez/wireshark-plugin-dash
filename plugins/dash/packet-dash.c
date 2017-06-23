@@ -817,6 +817,9 @@ static header_field_info hfi_msg_dsq_vchsig DASH_HFI_INIT =
 static header_field_info hfi_dash_msg_dsa DASH_HFI_INIT =
   { "Darksend Accept message", "dash.dsa", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
+static header_field_info hfi_dash_msg_dsa_denom DASH_HFI_INIT =
+  { "Denomination", "dash.dsa.denom", FT_UINT32, BASE_DEC, VALS(private_send_denomination), 0x0, NULL, HFILL };
+
 /* dsi - Darksend Entry
 	When queue is ready user is expected to send his entry to start actual mixing
 */
@@ -834,6 +837,12 @@ static header_field_info hfi_dash_msg_dsf DASH_HFI_INIT =
 */
 static header_field_info hfi_dash_msg_dsc DASH_HFI_INIT =
   { "Darksend Complete message", "dash.dsc", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_dash_msg_dsc_session_id DASH_HFI_INIT =
+  { "Session ID", "dash.dsc.session", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_dash_msg_dsc_message_id DASH_HFI_INIT =
+  { "Message ID", "dash.dsc.message", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
 /* dss - Darksend Sign Final Transaction
 	User's signed inputs for a group transaction in a mixing session
@@ -893,6 +902,10 @@ static header_field_info hfi_dash_msg_govsync DASH_HFI_INIT =
 */
 static header_field_info hfi_dash_msg_spork DASH_HFI_INIT =
   { "Spork message", "dash.spork", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_dash_msg_spork_id DASH_HFI_INIT =
+  { "Spork ID", "dash.spork.id", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
 
 /* dseg - ???
 	No documentation available
@@ -2180,6 +2193,12 @@ dissect_dash_msg_dsa(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_dsa, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
+  //Denomination - will be exclusively used when submitting inputs into the pool
+  proto_tree_add_item(tree, &hfi_dash_msg_dsa_denom, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  offset = create_ctxin_tree(tvb, ti, offset);
+
   return offset;
 }
 
@@ -2239,6 +2258,12 @@ dissect_dash_msg_dsc(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_dsc, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_dash_msg_dsc_session_id, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  proto_tree_add_item(tree, &hfi_dash_msg_dsc_message_id, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
 
   return offset;
 }
@@ -2352,6 +2377,9 @@ dissect_dash_msg_spork(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, 
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_spork, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_dash_msg_spork_id, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
 
   return offset;
 }
@@ -2696,6 +2724,7 @@ proto_register_dash(void)
 
     /* dsa message */
     &hfi_dash_msg_dsa,
+    &hfi_dash_msg_dsa_denom,
 
     /* dsi message */
     &hfi_dash_msg_dsi,
@@ -2708,6 +2737,8 @@ proto_register_dash(void)
 
     /* dsc message */
     &hfi_dash_msg_dsc,
+    &hfi_dash_msg_dsc_session_id,
+    &hfi_dash_msg_dsc_message_id,
 
     /* ix message */
     &hfi_dash_msg_ix,
@@ -2732,6 +2763,7 @@ proto_register_dash(void)
 
     /* spork message */
     &hfi_dash_msg_spork,
+    &hfi_dash_msg_spork_id,
 
     /* dseg message */
     &hfi_dash_msg_dseg,
