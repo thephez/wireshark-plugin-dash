@@ -44,6 +44,7 @@
 #define NEW_PROTO_TREE_API
 
 #include "config.h"
+#include <stdio.h>
 
 #include <epan/packet.h>
 #include <epan/exceptions.h>
@@ -427,7 +428,11 @@ static header_field_info hfi_msg_tx_in_prev_output DASH_HFI_INIT =
   { "Previous output (UTXO)", "dash.tx.in.prev_output", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_tx_in_prev_outp_hash DASH_HFI_INIT =
-  { "Hash", "dash.tx.in.prev_output.hash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+  { "Hash", "dash.tx.in.prev_output.hash", FT_BYTES, BASE_NONE, NULL, 0x0, "Hash of the previous output", HFILL };
+
+// Using to display flipped endian
+static header_field_info hfi_msg_tx_in_prev_outp_hash_reversed DASH_HFI_INIT =
+  { "Hash (reverse endian)", "dash.tx.in.prev_output.hash2", FT_STRING, BASE_NONE, NULL, 0x0, "Hash of previous output (reversed endianness)", HFILL };
 
 static header_field_info hfi_msg_tx_in_prev_outp_index DASH_HFI_INIT =
   { "Index", "dash.tx.in.prev_output.index", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1103,6 +1108,29 @@ static void add_varint_item(proto_tree *tree, tvbuff_t *tvb, const gint offset, 
   }
 }
 
+
+
+/*
+ Change hash endianness
+ This should be  done using the bytes (not converting to a string), but all
+ attempts at getting that to work have been unsuccesful so far
+*/
+static char * change_hash_endianness(tvbuff_t *tvb, guint32 offset, char *bytestring) {
+  int cx;
+  long b3, b2, b1, b0;
+  b0 = tvb_get_letoh64(tvb, offset + 0);
+  b1 = tvb_get_letoh64(tvb, offset + 8);
+  b2 = tvb_get_letoh64(tvb, offset + 16);
+  b3 = tvb_get_letoh64(tvb, offset + 24);
+
+  cx = snprintf(bytestring, 128, "%016lx", b3);
+  cx = cx + snprintf(bytestring + cx, 128 - cx, "%016lx", b2);
+  cx = cx + snprintf(bytestring + cx, 128 - cx, "%016lx", b1);
+  cx = cx + snprintf(bytestring + cx, 128 - cx, "%016lx", b0);
+
+  return bytestring;
+}
+
 /**
  * Create a sub-tree and fill it with a CTxIn structure
  */
@@ -1148,6 +1176,19 @@ create_ctxin_tree(tvbuff_t *tvb, proto_item *ti, guint32 offset)
   pti = proto_tree_add_item(subtree, &hfi_msg_tx_in_prev_output, tvb, offset, 36, ENC_NA);
   prevtree = proto_item_add_subtree(pti, ett_tx_in_outp);
 
+  // Correct hash (little endian)
+  //proto_tree_add_debug_text(prevtree, "Debug - Hash: %016lx%016lx%016lx%016lx", tvb_get_letoh64(tvb, offset + 24), tvb_get_letoh64(tvb, offset + 16), tvb_get_letoh64(tvb, offset + 8), tvb_get_letoh64(tvb, offset + 0));
+
+  char bytestring[128];
+  change_hash_endianness(tvb, offset, bytestring);
+
+  proto_tree_add_string(prevtree, &hfi_msg_tx_in_prev_outp_hash_reversed, tvb, offset, 32, bytestring); //tvb_bytes_to_str(wmem_packet_scope(), tvb, offset, 32));
+
+  // Unsuccessful attempts to do using bytes
+  //proto_tree_add_bytes_format(prevtree, 0, tvb, offset, 32, NULL, "Data chunk: %s", tvb_bytes_to_str(wmem_packet_scope(), tvb, offset, 32));
+  //proto_tree_add_bytes(prevtree, &hfi_msg_tx_in_prev_outp_hash, tvb, offset, 32, NULL); //, "Data chunk: %s", tvb_bytes_to_str(wmem_packet_scope(), tvb, offset, 32));
+
+  // Original code
   proto_tree_add_item(prevtree, &hfi_msg_tx_in_prev_outp_hash, tvb, offset, 32, ENC_NA);
   offset += 32;
 
@@ -1590,6 +1631,12 @@ dissect_dash_msg_tx_common(tvbuff_t *tvb, guint32 offset, packet_info *pinfo, pr
     pti = proto_tree_add_item(subtree, &hfi_msg_tx_in_prev_output, tvb, offset, 36, ENC_NA);
     prevtree = proto_item_add_subtree(pti, ett_tx_in_outp);
 
+    // Reversed endian
+    char bytestring[128];
+    change_hash_endianness(tvb, offset, bytestring);
+    proto_tree_add_string(prevtree, &hfi_msg_tx_in_prev_outp_hash_reversed, tvb, offset, 32, bytestring);
+
+    // Original endian
     proto_tree_add_item(prevtree, &hfi_msg_tx_in_prev_outp_hash, tvb, offset, 32, ENC_NA);
     offset += 32;
 
@@ -2597,6 +2644,7 @@ proto_register_dash(void)
     &hfi_msg_tx_in_prev_output,
 
     &hfi_msg_tx_in_prev_outp_hash,
+    &hfi_msg_tx_in_prev_outp_hash_reversed,
     &hfi_msg_tx_in_prev_outp_index,
 
     &hfi_msg_tx_in_script8,
