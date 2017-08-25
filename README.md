@@ -15,3 +15,28 @@ Note: This was built with Wireshark 2.3.  To use with Wireshark 2.2 it is necess
 ## Capture screenshot
 This shows a dissected Masternode Ping message. The packet also contains a Governance Vote.  Most Dash specific messages are not fully dissected, but all should be recognized.
 ![](plugins/dash/wireshark-dash-dissection.png)
+
+## Dash specific protocol implementation status (excludes items shared with the Bitcoin protocol)
+Name | Message Recognized | Message Dissected | Status | Description
+--- | --- | --- | --- | ---
+dsa | Y |  |  | Darksend Accept
+dsc | Y |  |  | Darksend Complete
+dseg | Y | Y |  | Masternode List/Entry Sync
+dsf | Y |  |  | Darksend Final Transaction
+dsi | Y |  |  | Darksend Entry
+dsq | Y | Y |  | Darksend Queue
+dssu | Y |  |  | Mixing Pool Status Update
+dstx | Y | N |  | Darksend Broadcast
+govobj | Y | N |  | Governance Object
+govobjvote | Y | Y |  | Governance Vote
+govsync | Y | N |  | Governance Vote
+ix | Y | N |  | Transaction Lock Request (InstantSend)
+mnb | Y | Partial |  | Masternode Broadcast
+mnget | Y | Y |  | Masternode Payment Sync
+mnp | Y | Y |  | Masternode Ping
+mnv | Y |  |  | Masternode Verify
+mnw | Y | Partial |  | Masternode Payment Vote
+mnwb | Y |  |  | Masternode Payment Block
+spork| Y | Y |  | Spork status
+ssc | Y | N |  | Sync Status Count
+txlvote | Y | N |  | Transaction Lock Vote
