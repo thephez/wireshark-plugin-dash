@@ -17,7 +17,7 @@ This shows a dissected Masternode Ping message. The packet also contains a Gover
 ![](plugins/dash/wireshark-dash-dissection.png)
 
 ## Dash specific protocol implementation status (excludes items shared with the Bitcoin protocol)
-Name | Message Recognized | Message Dissected | Status | Description
+Name | Recognized | Dissected | Status | Description
 --- | --- | --- | --- | ---
 dsa | Y |  |  | Darksend Accept
 dsc | Y |  |  | Darksend Complete
