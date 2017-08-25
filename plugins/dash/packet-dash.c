@@ -189,6 +189,26 @@ static const value_string spork_description[] =
 
 };
 
+static const value_string masternode_sync_item_id[] =
+{
+  // Defined in src/masternodesync.h 
+  // https://github.com/dashpay/dash/blob/master/src/masternode-sync.h
+  { -1, "MASTERNODE_SYNC_FAILED" },
+  { 0, "MASTERNODE_SYNC_INITIAL" },
+  { 1, "MASTERNODE_SYNC_SPORKS" },
+  { 2, "MASTERNODE_SYNC_LIST" },
+  { 3, "MASTERNODE_SYNC_MNW" },
+  { 4, "MASTERNODE_SYNC_GOVERNANCE" },
+  { 10, "MASTERNODE_SYNC_GOVOBJ" },
+  { 11, "MASTERNODE_SYNC_GOVOBJ_VOTE" },
+  { 999, "MASTERNODE_SYNC_FINISHED" },
+
+  // Not sure if these belong here
+  { 6, "MASTERNODE_SYNC_TICK_SECONDS???" },
+  { 30, "MASTERNODE_SYNC_TIMEOUT_SECONDS???" },
+
+};
+
 
 /*
  * Minimum dash identification header.
@@ -947,9 +967,17 @@ static header_field_info hfi_dash_msg_dseg DASH_HFI_INIT =
 
 /* ssc - Sync Status Count
 	No documentation available
+    Per src/masternode-sync.c - PushMessage(NetMsgType::SYNCSTATUSCOUNT, [ItemID], [Count]):
+        Item IDs defined at top of src/masternode-sync.h
 */
 static header_field_info hfi_dash_msg_ssc DASH_HFI_INIT =
   { "Sync Status Count message", "dash.ssc", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_dash_msg_ssc_item_id DASH_HFI_INIT =
+  { "Item ID", "dash.ssc.itemid", FT_UINT32, BASE_DEC, VALS(masternode_sync_item_id), 0x0, NULL, HFILL };
+
+static header_field_info hfi_dash_msg_ssc_count DASH_HFI_INIT =
+  { "Count", "dash.ssc.count", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
 /* mnget - Masternode Payment Sync
 	No documentation available
@@ -2496,6 +2524,12 @@ dissect_dash_msg_ssc(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_ssc, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
+  proto_tree_add_item(tree, &hfi_dash_msg_ssc_item_id, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  proto_tree_add_item(tree, &hfi_dash_msg_ssc_count, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
   return offset;
 }
 
@@ -2856,6 +2890,8 @@ proto_register_dash(void)
 
     /* ssc message */
     &hfi_dash_msg_ssc,
+    &hfi_dash_msg_ssc_item_id,
+    &hfi_dash_msg_ssc_count,
 
     /* mnget message */
     &hfi_dash_msg_mnget,
