@@ -794,6 +794,18 @@ static header_field_info hfi_dash_msg_mnwb DASH_HFI_INIT =
 static header_field_info hfi_dash_msg_mnv DASH_HFI_INIT =
   { "Masternode Verify message", "dash.mnv", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
+static header_field_info hfi_msg_mnv_nonce DASH_HFI_INIT =
+  { "Nonce", "dash.mnv.nonce", FT_UINT32, BASE_HEX, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_mnv_height DASH_HFI_INIT =
+  { "Block height", "dash.mnv.height", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_mnv_vchsig1 DASH_HFI_INIT =
+  { "Masternode Signature 1", "dash.mnv.vchsig1", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_mnv_vchsig2 DASH_HFI_INIT =
+  { "Masternode Signature 2", "dash.mnv.vchsig2", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
 /* dstx - Darksend Broadcast
 	Masternodes can broadcast subsidised transactions without fees for the sake of security in mixing. This is done via the DSTX message.
 */
@@ -873,6 +885,9 @@ static header_field_info hfi_dash_msg_dsi DASH_HFI_INIT =
 */
 static header_field_info hfi_dash_msg_dsf DASH_HFI_INIT =
   { "Darksend Final Tx message", "dash.dsf", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_dash_msg_dsf_session_id DASH_HFI_INIT =
+  { "Session ID", "dash.dsf.session", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
 /* dsc - Darksend Complete
 	
@@ -1242,6 +1257,26 @@ create_ctxin_tree(tvbuff_t *tvb, proto_item *ti, guint32 offset)
   offset += 4;
 
   return offset; //tree;
+}
+
+/**
+ * Create a sub-tree and fill it with a CTxIn structure
+ */
+static int //proto_tree *
+create_cservice_tree(tvbuff_t *tvb, proto_item *ti, guint32 offset)
+{
+  proto_tree *tree;
+  tree = proto_item_add_subtree(ti, ett_address);
+
+  /* IPv6 address */
+  proto_tree_add_item(tree, &hfi_address_address, tvb, offset, 16, ENC_NA);
+  offset += 16;
+
+  /* port */
+  proto_tree_add_item(tree, &hfi_address_port, tvb, offset, 2, ENC_BIG_ENDIAN);
+  offset += 2;
+
+  return offset;
 }
 
 static proto_tree *
@@ -2177,6 +2212,10 @@ dissect_dash_msg_mnb(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   // Add unspent output of the Masternode that signed the message (CTxIn)
   offset = create_ctxin_tree(tvb, ti, offset);
 
+  // Add IP address/port (CService)
+  //ti   = proto_tree_add_item(tree, &hfi_dash_msg_addr, tvb, offset, -1, ENC_NA);
+  offset = create_cservice_tree(tvb, ti, offset);
+
   return offset;
 }
 
@@ -2232,6 +2271,23 @@ dissect_dash_msg_mnv(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnv, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  // Add IP address/port (CService)
+  offset = create_cservice_tree(tvb, ti, offset);
+
+  // Nonce
+  proto_tree_add_item(tree, &hfi_msg_mnv_nonce, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  // Block Height
+  proto_tree_add_item(tree, &hfi_msg_mnv_height, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  // vchSig1
+  proto_tree_add_item(tree, &hfi_msg_mnv_vchsig1, tvb, offset, 67, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
+
+  // vchSig2
+  proto_tree_add_item(tree, &hfi_msg_mnv_vchsig2, tvb, offset, 67, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
 
   return offset;
 }
@@ -2328,6 +2384,11 @@ dissect_dash_msg_dsf(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_dsf, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_dash_msg_dsf_session_id, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  offset = create_ctxin_tree(tvb, ti, offset);
 
   return offset;
 }
@@ -2817,6 +2878,10 @@ proto_register_dash(void)
 
     /* mnv message */
     &hfi_dash_msg_mnv,
+    &hfi_msg_mnv_nonce,
+    &hfi_msg_mnv_height,
+    &hfi_msg_mnv_vchsig1,
+    &hfi_msg_mnv_vchsig2,
 
     /* dstx message */
     &hfi_dash_msg_dstx,
@@ -2848,6 +2913,7 @@ proto_register_dash(void)
 
     /* dsf message */
     &hfi_dash_msg_dsf,
+    &hfi_dash_msg_dsf_session_id,
 
     /* dss message */
     &hfi_dash_msg_dss,

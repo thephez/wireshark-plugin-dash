@@ -19,13 +19,13 @@ This shows a dissected Masternode Ping message. The packet also contains a Gover
 ## Dash specific protocol implementation status (excludes items shared with the Bitcoin protocol)
 Name | Recognized | Dissected | Status | Description
 --- | --- | --- | --- | ---
-dsa | Y |  |  | Darksend Accept
-dsc | Y |  |  | Darksend Complete
+dsa | Y | Y* | Untested | Darksend Accept
+dsc | Y | Y* | Untested | Darksend Complete
 dseg | Y | Y |  | Masternode List/Entry Sync
-dsf | Y |  |  | Darksend Final Transaction
+dsf | Y | Y* | Untested | Darksend Final Transaction
 dsi | Y |  |  | Darksend Entry
 dsq | Y | Y |  | Darksend Queue
-dssu | Y |  |  | Mixing Pool Status Update
+dssu | Y | Y* | Untested | Mixing Pool Status Update
 dstx | Y | N |  | Darksend Broadcast
 govobj | Y | N |  | Governance Object
 govobjvote | Y | Y |  | Governance Vote
@@ -34,9 +34,9 @@ ix | Y | N |  | Transaction Lock Request (InstantSend)
 mnb | Y | Partial |  | Masternode Broadcast
 mnget | Y | Y |  | Masternode Payment Sync
 mnp | Y | Y |  | Masternode Ping
-mnv | Y |  |  | Masternode Verify
+mnv | Y | Y* | Untested | Masternode Verify
 mnw | Y | Partial |  | Masternode Payment Vote
-mnwb | Y |  |  | Masternode Payment Block
+mnwb | Y | NA | Inventory only | Masternode Payment Block (no message - inventory only)
 spork| Y | Y |  | Spork status
-ssc | Y | N |  | Sync Status Count
+ssc | Y | Y |  | Sync Status Count
 txlvote | Y | N |  | Transaction Lock Vote
