@@ -27,7 +27,7 @@ dsi | Y |  |  | Darksend Entry
 dsq | Y | Y |  | Darksend Queue
 dssu | Y | Y* | Untested | Mixing Pool Status Update
 dstx | Y | N |  | Darksend Broadcast
-govobj | Y | N |  | Governance Object
+govobj | Y | Partial |  | Governance Object
 govobjvote | Y | Y |  | Governance Vote
 govsync | Y | N |  | Governance Vote
 ix | Y | N |  | Transaction Lock Request (InstantSend)

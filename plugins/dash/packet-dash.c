@@ -209,6 +209,17 @@ static const value_string masternode_sync_item_id[] =
 
 };
 
+static const value_string governance_object[] =
+{
+  // Defined in src/governance-object.h
+  // https://github.com/dashpay/dash/blob/master/src/governance-object.h
+  { 0, "GOVERNANCE_OBJECT_UNKNOWN" },
+  { 1, "GOVERNANCE_OBJECT_PROPOSAL" },
+  { 2, "GOVERNANCE_OBJECT_TRIGGER" },
+  { 3, "GOVERNANCE_OBJECT_WATCHDOG" },
+
+};
+
 
 /*
  * Minimum dash identification header.
@@ -925,6 +936,30 @@ static header_field_info hfi_dash_msg_txlvote DASH_HFI_INIT =
 static header_field_info hfi_dash_msg_govobj DASH_HFI_INIT =
   { "Governance Object message", "dash.govobj", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
+static header_field_info hfi_msg_govobj_parenthash DASH_HFI_INIT =
+  { "Parent hash", "dash.govobj.parenthash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_govobj_revision DASH_HFI_INIT =
+  { "Revision", "dash.govobj.revision", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_govobj_createtime DASH_HFI_INIT =
+  { "Created timestamp", "dash.govobj.createtime", FT_ABSOLUTE_TIME, ABSOLUTE_TIME_LOCAL, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_govobj_collateralhash DASH_HFI_INIT =
+  { "Collateral hash", "dash.govobj.collateralhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* strData (0-16384)
+static header_field_info hfi_msg_govobj_collateralhash DASH_HFI_INIT =
+  { "Collateral hash", "dash.govobj.collateralhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+*/
+
+static header_field_info hfi_msg_govobj_object_type DASH_HFI_INIT =
+  { "Object Type", "dash.govobj.objecttype", FT_UINT32, BASE_DEC, VALS(governance_object), 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_govobj_vchsig DASH_HFI_INIT =
+  { "Masternode Signature", "dash.govobj.vchsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+
 /* govobjvote - Governance Vote
 	Masternodes use governance voting in response to new proposals, contracts, settings or finalized budgets.
 */
@@ -953,6 +988,11 @@ static header_field_info hfi_msg_govobjvote_vchsig DASH_HFI_INIT =
 static header_field_info hfi_dash_msg_govsync DASH_HFI_INIT =
   { "Masternode Governance Sync message", "dash.govsync", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
+static header_field_info hfi_msg_govsync_hash DASH_HFI_INIT =
+  { "Hash", "dash.govsync.hash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_dash_msg_govsync_bloom_filter DASH_HFI_INIT =
+  { "Bloom Filter", "dash.govsync.bloomfilter", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* spork - Spork
 	No documentation available
@@ -1260,7 +1300,7 @@ create_ctxin_tree(tvbuff_t *tvb, proto_item *ti, guint32 offset)
 }
 
 /**
- * Create a sub-tree and fill it with a CTxIn structure
+ * Create a sub-tree and fill it with a CService structure
  */
 static int //proto_tree *
 create_cservice_tree(tvbuff_t *tvb, proto_item *ti, guint32 offset)
@@ -2471,6 +2511,38 @@ dissect_dash_msg_govobj(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree,
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_govobj, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
+  // Parent Hash
+  proto_tree_add_item(tree, &hfi_msg_govobj_parenthash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  // Revision
+  proto_tree_add_item(tree, &hfi_msg_govobj_revision, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  // nTime - create time
+  proto_tree_add_item(tree, &hfi_msg_govobj_createtime, tvb, offset, 8, ENC_LITTLE_ENDIAN);
+  offset += 8;
+
+  // Collateral Hash
+  proto_tree_add_item(tree, &hfi_msg_govobj_collateralhash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  /*
+  Following parts not working - how do we know how long the strData is?
+
+  // strData
+  offset +=58; // Based on example
+
+  // Object Type
+  proto_tree_add_item(tree, &hfi_msg_govobj_object_type, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  // Unspent output for the masternode which is signing (CTxIn)
+  offset = create_ctxin_tree(tvb, ti, offset);
+
+  // vchSig - Signature of this message by masternode (verifiable via pubKeyMasternode)
+  proto_tree_add_item(tree, &hfi_msg_govobj_vchsig, tvb, offset, 66, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 66
+  */
   return offset;
 }
 
@@ -2522,6 +2594,12 @@ dissect_dash_msg_govsync(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_govsync, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  // Hash
+  proto_tree_add_item(tree, &hfi_msg_govsync_hash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  proto_tree_add_item(tree, &hfi_dash_msg_govsync_bloom_filter, tvb, offset, -1, ENC_NA);
 
   return offset;
 }
@@ -2931,6 +3009,12 @@ proto_register_dash(void)
 
     /* govobj message */
     &hfi_dash_msg_govobj,
+    &hfi_msg_govobj_parenthash,
+    &hfi_msg_govobj_revision,
+    &hfi_msg_govobj_createtime,
+    &hfi_msg_govobj_collateralhash,
+    &hfi_msg_govobj_object_type,
+    &hfi_msg_govobj_vchsig,
 
     /* govobjvote message */
     &hfi_dash_msg_govobjvote,
@@ -2942,7 +3026,8 @@ proto_register_dash(void)
 
     /* govsync message */
     &hfi_dash_msg_govsync,
-
+    &hfi_msg_govsync_hash,
+    &hfi_dash_msg_govsync_bloom_filter,
 
     /* spork message */
     &hfi_dash_msg_spork,
