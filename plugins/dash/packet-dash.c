@@ -823,6 +823,12 @@ static header_field_info hfi_msg_mnv_vchsig2 DASH_HFI_INIT =
 static header_field_info hfi_dash_msg_dstx DASH_HFI_INIT =
   { "Darksend Broadcast message", "dash.dstx", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
+static header_field_info hfi_msg_dstx_vchsig DASH_HFI_INIT =
+  { "Masternode Signature", "dash.dstx.vchsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_dstx_sigtime DASH_HFI_INIT =
+  { "Signature timestamp", "dash.dstx.sigtime", FT_ABSOLUTE_TIME, ABSOLUTE_TIME_LOCAL, NULL, 0x0, NULL, HFILL };
+
 /* dssu - Mixing pool status update
 	Mixing pool status update
 */
@@ -949,8 +955,8 @@ static header_field_info hfi_msg_govobj_collateralhash DASH_HFI_INIT =
   { "Collateral hash", "dash.govobj.collateralhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* strData (0-16384)
-static header_field_info hfi_msg_govobj_collateralhash DASH_HFI_INIT =
-  { "Collateral hash", "dash.govobj.collateralhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_govobj_strdata DASH_HFI_INIT =
+  { "Data", "dash.govobj.strdata", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 */
 
 static header_field_info hfi_msg_govobj_object_type DASH_HFI_INIT =
@@ -2344,6 +2350,20 @@ dissect_dash_msg_dstx(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, v
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_dstx, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
+  // Tx
+  offset = dissect_dash_msg_tx_common(tvb, 0, pinfo, tree, 0);
+
+  // CTxIn
+  offset = create_ctxin_tree(tvb, ti, offset);
+
+  // vchSig
+  proto_tree_add_item(tree, &hfi_msg_dstx_vchsig, tvb, offset, 67, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
+  offset += 66;
+
+  // sigTime - Signature time for this ping
+  proto_tree_add_item(tree, &hfi_msg_dstx_sigtime, tvb, offset, 8, ENC_LITTLE_ENDIAN);
+  offset += 8;
+
   return offset;
 }
 
@@ -2428,7 +2448,8 @@ dissect_dash_msg_dsf(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   proto_tree_add_item(tree, &hfi_dash_msg_dsf_session_id, tvb, offset, 4, ENC_LITTLE_ENDIAN);
   offset += 4;
 
-  offset = create_ctxin_tree(tvb, ti, offset);
+  // Tx Final
+  offset = dissect_dash_msg_tx_common(tvb, 0, pinfo, tree, 0);
 
   return offset;
 }
@@ -2480,6 +2501,9 @@ dissect_dash_msg_ix(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, voi
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_ix, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  // Tx
+  offset = dissect_dash_msg_tx_common(tvb, 0, pinfo, tree, 0);
 
   return offset;
 }
@@ -2599,6 +2623,7 @@ dissect_dash_msg_govsync(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree
   proto_tree_add_item(tree, &hfi_msg_govsync_hash, tvb, offset, 32, ENC_NA);
   offset += 32;
 
+  // Bloom Filter
   proto_tree_add_item(tree, &hfi_dash_msg_govsync_bloom_filter, tvb, offset, -1, ENC_NA);
 
   return offset;
@@ -2963,6 +2988,8 @@ proto_register_dash(void)
 
     /* dstx message */
     &hfi_dash_msg_dstx,
+    &hfi_msg_dstx_vchsig,
+    &hfi_msg_dstx_sigtime,
 
     /* dssu message */
     &hfi_dash_msg_dssu,
