@@ -30,7 +30,7 @@ dstx | Y | Y |  | Darksend Broadcast
 govobj | Y | Partial |  | Governance Object
 govobjvote | Y | Y |  | Governance Vote
 govsync | Y | Partial |  | Governance Vote
-ix | Y | Y* | Untested | Transaction Lock Request (InstantSend)
+ix | Y | Y |  | Transaction Lock Request (InstantSend)
 mnb | Y | Partial |  | Masternode Broadcast
 mnget | Y | Y |  | Masternode Payment Sync
 mnp | Y | Y |  | Masternode Ping
