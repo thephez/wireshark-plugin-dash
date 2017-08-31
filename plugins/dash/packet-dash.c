@@ -993,10 +993,9 @@ static header_field_info hfi_msg_govobj_createtime DASH_HFI_INIT =
 static header_field_info hfi_msg_govobj_collateralhash DASH_HFI_INIT =
   { "Collateral hash", "dash.govobj.collateralhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
-/* strData (0-16384)
+/* strData (0-16384) */
 static header_field_info hfi_msg_govobj_strdata DASH_HFI_INIT =
-  { "Data", "dash.govobj.strdata", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-*/
+  { "Data", "dash.govobj.strdata", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_govobj_object_type DASH_HFI_INIT =
   { "Object Type", "dash.govobj.objecttype", FT_UINT32, BASE_DEC, VALS(governance_object), 0x0, NULL, HFILL };
@@ -2642,6 +2641,7 @@ dissect_dash_msg_govobj(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree,
 {
   proto_item *ti;
   guint32     offset = 0;
+  guint32 field_length = 0;
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_govobj, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
@@ -2662,11 +2662,8 @@ dissect_dash_msg_govobj(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree,
   proto_tree_add_item(tree, &hfi_msg_govobj_collateralhash, tvb, offset, 32, ENC_NA);
   offset += 32;
 
-  /*
-  Following parts not working - how do we know how long the strData is?
-
   // strData
-  offset +=58; // Based on example
+  create_string_tree(tree, &hfi_msg_govobj_strdata, tvb, &offset);
 
   // Object Type
   proto_tree_add_item(tree, &hfi_msg_govobj_object_type, tvb, offset, 4, ENC_LITTLE_ENDIAN);
@@ -2676,8 +2673,14 @@ dissect_dash_msg_govobj(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree,
   offset = create_ctxin_tree(tvb, ti, offset);
 
   // vchSig - Signature of this message by masternode (verifiable via pubKeyMasternode)
-  proto_tree_add_item(tree, &hfi_msg_govobj_vchsig, tvb, offset, 66, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 66
-  */
+  //proto_tree_add_item(tree, &hfi_msg_govobj_vchsig, tvb, offset, 66, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 66
+  field_length = tvb_get_guint8(tvb, offset);
+  proto_tree_add_item(tree, &hfi_msg_field_size, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+  ++offset;
+
+  proto_tree_add_item(tree, &hfi_msg_mnb_vchsig, tvb, offset, field_length, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
+  offset += field_length; //66;
+
   return offset;
 }
 
@@ -3162,6 +3165,7 @@ proto_register_dash(void)
     &hfi_msg_govobj_revision,
     &hfi_msg_govobj_createtime,
     &hfi_msg_govobj_collateralhash,
+    &hfi_msg_govobj_strdata,
     &hfi_msg_govobj_object_type,
     &hfi_msg_govobj_vchsig,
 
