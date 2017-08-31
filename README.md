@@ -27,9 +27,9 @@ dsi | Y |  |  | Darksend Entry
 dsq | Y | Y |  | Darksend Queue
 dssu | Y | Y* | Untested | Mixing Pool Status Update
 dstx | Y | Y |  | Darksend Broadcast
-govobj | Y | Partial |  | Governance Object
+govobj | Y | Y |  | Governance Object
 govobjvote | Y | Y |  | Governance Vote
-govsync | Y | Y |  | Governance Vote
+govsync | Y | Partial |  | Governance Vote
 ix | Y | Y |  | Transaction Lock Request (InstantSend)
 mnb | Y | Y |  | Masternode Broadcast
 mnget | Y | Y |  | Masternode Payment Sync
