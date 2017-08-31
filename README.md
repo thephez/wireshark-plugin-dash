@@ -31,7 +31,7 @@ govobj | Y | Partial |  | Governance Object
 govobjvote | Y | Y |  | Governance Vote
 govsync | Y | Partial |  | Governance Vote
 ix | Y | Y |  | Transaction Lock Request (InstantSend)
-mnb | Y | Partial |  | Masternode Broadcast
+mnb | Y | Y |  | Masternode Broadcast
 mnget | Y | Y |  | Masternode Payment Sync
 mnp | Y | Y |  | Masternode Ping
 mnv | Y | Y* | Untested | Masternode Verify

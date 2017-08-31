@@ -220,6 +220,17 @@ static const value_string governance_object[] =
 
 };
 
+static const value_string pubkey_type[] =
+{
+  // Defined in src/pubkey.h
+  // https://github.com/dashpay/dash/blob/master/src/pubkey.h
+  { 2, "COMPRESSED - Even" },
+  { 3, "COMPRESSED - Odd" },
+  { 4, "UNCOMPRESSED" },
+  { 6, "UNCOMPRESSED" },
+  { 7, "UNCOMPRESSED" },
+};
+
 
 /*
  * Minimum dash identification header.
@@ -252,6 +263,19 @@ static header_field_info hfi_dash_length DASH_HFI_INIT =
 
 static header_field_info hfi_dash_checksum DASH_HFI_INIT =
   { "Payload checksum", "dash.checksum", FT_UINT32, BASE_HEX, NULL, 0x0, NULL, HFILL };
+
+// Generic (re-usable) fields
+
+static header_field_info hfi_msg_field_size DASH_HFI_INIT =
+  { "Field Size", "dash.generic.fieldsize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_pubkey_type DASH_HFI_INIT =
+  { "Public Key Type", "dash.generic.pubkeytype", FT_UINT8, BASE_DEC, VALS(pubkey_type), 0x0, NULL, HFILL };
+
+/* CPubkey structure */
+static header_field_info hfi_dash_cpubkey DASH_HFI_INIT =
+  { "Public Key", "dash.cpubkey", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
 
 /* version message */
 static header_field_info hfi_dash_msg_version DASH_HFI_INIT =
@@ -755,6 +779,21 @@ static header_field_info hfi_data_varint_count64 DASH_HFI_INIT =
 */
 static header_field_info hfi_dash_msg_mnb DASH_HFI_INIT =
   { "Masternode Broadcast message", "dash.mnb", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_mnb_pubkey_collateral DASH_HFI_INIT =
+  { "Public Key of Masternode Collateral", "dash.mnb.collateralpubkey", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_mnb_pubkey_masternode DASH_HFI_INIT =
+  { "Public Key of Masternode", "dash.mnb.masternodepubkey", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_mnb_vchsig DASH_HFI_INIT =
+  { "Signature", "dash.mnb.vchsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_mnb_sigtime DASH_HFI_INIT =
+  { "Signature timestamp", "dash.mnb.sigtime", FT_ABSOLUTE_TIME, ABSOLUTE_TIME_LOCAL, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_mnb_protocol_version DASH_HFI_INIT =
+  { "Protocol Version", "dash.mnb.protocolversion", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
 /* mnp - Masternode Ping
 	Field Size 	Field Name 	Data type 	Description
@@ -1321,6 +1360,61 @@ create_cservice_tree(tvbuff_t *tvb, proto_item *ti, guint32 offset)
   /* port */
   proto_tree_add_item(tree, &hfi_address_port, tvb, offset, 2, ENC_BIG_ENDIAN);
   offset += 2;
+
+  return offset;
+}
+
+/**
+ * Create a sub-tree and fill it with a Masternode Ping structure
+ */
+static int //proto_tree *
+create_cmasternodeping_tree(tvbuff_t *tvb, proto_item *ti, guint32 offset)
+{
+  proto_tree *tree;
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  // Add unspent output of the Masternode that signed the message (CTxIn)
+  offset = create_ctxin_tree(tvb, ti, offset);
+
+  // Block Hash - Current chaintip blockhash minus 12
+  proto_tree_add_item(tree, &hfi_msg_mnp_blockhash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  // sigTime - Signature time for this ping
+  proto_tree_add_item(tree, &hfi_msg_mnp_sigtime, tvb, offset, 8, ENC_LITTLE_ENDIAN);
+  offset += 8;
+
+  // vchSig - Signature of this message by masternode (verifiable via pubKeyMasternode)
+  proto_tree_add_item(tree, &hfi_msg_mnp_vchsig, tvb, offset, 66, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 66
+
+  return offset;
+}
+
+/**
+ * Create a sub-tree and fill it with a CPubkey structure
+ */
+static int //proto_tree *
+create_cpubkey_tree(proto_tree *tree, tvbuff_t *tvb, proto_item *ti, header_field_info* hfi, guint32 offset)
+{
+  guint8 field_length = 0;
+
+  // Check length of key
+  field_length = tvb_get_guint8(tvb, offset);
+
+  // Add Public Key subtree
+  ti   = proto_tree_add_item(tree, &hfi_dash_cpubkey, tvb, offset, field_length + 1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  // Add key length
+  proto_tree_add_item(tree, &hfi_msg_field_size, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+  ++offset;
+
+  // Add key type - Check key type by looking at first byte (2 or 3 - length = 33; 4, 6, or 7 - length = 65)
+  proto_tree_add_item(tree, &hfi_msg_pubkey_type, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+
+  // Add key
+  proto_tree_add_item(tree, hfi, tvb, offset, field_length, ENC_NA);  // 33-65 characters (depending on if compressed/uncompressed)
+  offset += field_length;
 
   return offset;
 }
@@ -2224,21 +2318,8 @@ dissect_dash_msg_mnp(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   guint32     offset = 0;
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnp, tvb, offset, -1, ENC_NA);
-  tree = proto_item_add_subtree(ti, ett_dash_msg);
 
-   // Add unspent output of the Masternode that signed the message (CTxIn)
-  offset = create_ctxin_tree(tvb, ti, offset);
-
-  // Block Hash - Current chaintip blockhash minus 12
-  proto_tree_add_item(tree, &hfi_msg_mnp_blockhash, tvb, offset, 32, ENC_NA);
-  offset += 32;
-
-  // sigTime - Signature time for this ping
-  proto_tree_add_item(tree, &hfi_msg_mnp_sigtime, tvb, offset, 8, ENC_LITTLE_ENDIAN);
-  offset += 8;
-
-  // vchSig - Signature of this message by masternode (verifiable via pubKeyMasternode)
-  proto_tree_add_item(tree, &hfi_msg_mnp_vchsig, tvb, offset, 66, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 66
+  offset = create_cmasternodeping_tree(tvb, ti, offset);
 
   return offset;
 }
@@ -2251,6 +2332,7 @@ dissect_dash_msg_mnb(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
 {
   proto_item *ti;
   guint32     offset = 0;
+  guint32 field_length = 0;
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnb, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
@@ -2258,9 +2340,33 @@ dissect_dash_msg_mnb(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   // Add unspent output of the Masternode that signed the message (CTxIn)
   offset = create_ctxin_tree(tvb, ti, offset);
 
-  // Add IP address/port (CService)
-  //ti   = proto_tree_add_item(tree, &hfi_dash_msg_addr, tvb, offset, -1, ENC_NA);
   offset = create_cservice_tree(tvb, ti, offset);
+
+  // Collateral Pubkey
+  offset = create_cpubkey_tree(tree, tvb, ti, &hfi_msg_mnb_pubkey_collateral, offset);
+
+  // Masternode Pubkey
+  offset = create_cpubkey_tree(tree, tvb, ti, &hfi_msg_mnb_pubkey_masternode, offset);
+
+  // Sig
+  field_length = tvb_get_guint8(tvb, offset);
+  proto_tree_add_item(tree, &hfi_msg_field_size, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+  ++offset;
+
+  proto_tree_add_item(tree, &hfi_msg_mnb_vchsig, tvb, offset, field_length, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
+  offset += field_length; //66;
+
+  // Sig Time
+  proto_tree_add_item(tree, &hfi_msg_mnb_sigtime, tvb, offset, 8, ENC_LITTLE_ENDIAN);
+  offset += 8;
+
+  // Protocol Version
+  proto_tree_add_item(tree, &hfi_msg_mnb_protocol_version, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  // CMasternodePing
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnp, tvb, offset, -1, ENC_NA);
+  offset = create_cmasternodeping_tree(tvb, ti, offset);
 
   return offset;
 }
@@ -2346,6 +2452,7 @@ dissect_dash_msg_dstx(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, v
 {
   proto_item *ti;
   guint32     offset = 0;
+  guint8 field_length = 0;
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_dstx, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
@@ -2357,8 +2464,12 @@ dissect_dash_msg_dstx(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, v
   offset = create_ctxin_tree(tvb, ti, offset);
 
   // vchSig
-  proto_tree_add_item(tree, &hfi_msg_dstx_vchsig, tvb, offset, 67, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
-  offset += 66;
+  field_length = tvb_get_guint8(tvb, offset);
+  proto_tree_add_item(tree, &hfi_msg_field_size, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+  ++offset;
+
+  proto_tree_add_item(tree, &hfi_msg_dstx_vchsig, tvb, offset, field_length, ENC_NA);
+  offset += field_length;
 
   // sigTime - Signature time for this ping
   proto_tree_add_item(tree, &hfi_msg_dstx_sigtime, tvb, offset, 8, ENC_LITTLE_ENDIAN);
@@ -2759,6 +2870,12 @@ proto_register_dash(void)
     &hfi_dash_length,
     &hfi_dash_checksum,
 
+    /* Generic fields */
+    &hfi_msg_field_size,
+    &hfi_msg_pubkey_type,
+
+    &hfi_dash_cpubkey,
+
     /* version message */
     &hfi_dash_msg_version,
     &hfi_msg_version_version,
@@ -2971,6 +3088,11 @@ proto_register_dash(void)
 
     /* mnb message */
     &hfi_dash_msg_mnb,
+    &hfi_msg_mnb_pubkey_collateral,
+    &hfi_msg_mnb_pubkey_masternode,
+    &hfi_msg_mnb_vchsig,
+    &hfi_msg_mnb_sigtime,
+    &hfi_msg_mnb_protocol_version,
 
     /* mnw message */
     &hfi_dash_msg_mnw,
