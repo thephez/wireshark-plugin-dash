@@ -790,7 +790,7 @@ static header_field_info hfi_msg_mnb_pubkey_masternode DASH_HFI_INIT =
   { "Public Key of Masternode", "dash.mnb.masternodepubkey", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_mnb_vchsig DASH_HFI_INIT =
-  { "Signature", "dash.mnb.vchsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+  { "Message Signature", "dash.mnb.vchsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_mnb_sigtime DASH_HFI_INIT =
   { "Signature timestamp", "dash.mnb.sigtime", FT_ABSOLUTE_TIME, ABSOLUTE_TIME_LOCAL, NULL, 0x0, NULL, HFILL };
@@ -834,6 +834,11 @@ static header_field_info hfi_dash_msg_mnw DASH_HFI_INIT =
 static header_field_info hfi_dash_msg_mnw_payheight DASH_HFI_INIT =
   { "Block pay height", "dash.mnw.height", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
+static header_field_info hfi_msg_mnw_payeeaddress DASH_HFI_INIT =
+  { "Payee Address", "dash.mnw.payeeaddress", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_mnw_sig DASH_HFI_INIT =
+  { "Masternode Signature", "dash.mnw.sig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* mnwb - Masternode Payment Block
 
@@ -1139,6 +1144,25 @@ get_dash_pdu_length(packet_info *pinfo _U_, tvbuff_t *tvb,
 }
 
 /**
+ * Add signature to tree
+ */
+static int //proto_tree *
+create_signature_tree(proto_tree *tree, tvbuff_t *tvb, header_field_info* hfi, guint32 offset)
+{
+  guint8 field_length = 0;
+
+  // Sig
+  field_length = tvb_get_guint8(tvb, offset);
+  //proto_tree_add_item(tree, &hfi_msg_field_size, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+  ++offset;
+
+  proto_tree_add_item(tree, hfi, tvb, offset, field_length, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
+  offset += field_length; //66;
+
+  return offset;
+}
+
+/**
  * Create a services sub-tree for bit-by-bit display
  */
 static proto_tree *
@@ -1436,7 +1460,7 @@ create_cmasternodeping_tree(tvbuff_t *tvb, proto_item *ti, guint32 offset)
   offset += 8;
 
   // vchSig - Signature of this message by masternode (verifiable via pubKeyMasternode)
-  proto_tree_add_item(tree, &hfi_msg_mnp_vchsig, tvb, offset, 66, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 66
+  offset = create_signature_tree(tree, tvb, &hfi_msg_mnp_vchsig, offset);
 
   return offset;
 }
@@ -1469,26 +1493,6 @@ create_cpubkey_tree(proto_tree *tree, tvbuff_t *tvb, proto_item *ti, header_fiel
 
   return offset;
 }
-
-/**
- * Add signature to tree
- */
-static int //proto_tree *
-create_signature_tree(proto_tree *tree, tvbuff_t *tvb, header_field_info* hfi, guint32 offset)
-{
-  guint8 field_length = 0;
-
-  // Sig
-  field_length = tvb_get_guint8(tvb, offset);
-  //proto_tree_add_item(tree, &hfi_msg_field_size, tvb, offset, 1, ENC_LITTLE_ENDIAN);
-  ++offset;
-
-  proto_tree_add_item(tree, hfi, tvb, offset, field_length, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
-  offset += field_length; //66;
-
-  return offset;
-}
-
 
 static proto_tree *
 create_string_tree(proto_tree *tree, header_field_info* hfi, tvbuff_t *tvb, guint32* offset)
@@ -2374,6 +2378,7 @@ dissect_dash_msg_dsq(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   offset += 4;
 
   // vchSig - Signature of this message by masternode (verifiable via pubKeyMasternode)
+  //offset = create_signature_tree(tree, tvb, &hfi_msg_dsq_vchsig, offset); - This should be used, but there appears to be an extra "00" between the create time and the sig
   proto_tree_add_item(tree, &hfi_msg_dsq_vchsig, tvb, offset, 67, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
 
   return offset;
@@ -2403,7 +2408,6 @@ dissect_dash_msg_mnb(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
 {
   proto_item *ti;
   guint32     offset = 0;
-  guint32 field_length = 0;
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnb, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
@@ -2420,12 +2424,7 @@ dissect_dash_msg_mnb(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   offset = create_cpubkey_tree(tree, tvb, ti, &hfi_msg_mnb_pubkey_masternode, offset);
 
   // Sig
-  field_length = tvb_get_guint8(tvb, offset);
-  proto_tree_add_item(tree, &hfi_msg_field_size, tvb, offset, 1, ENC_LITTLE_ENDIAN);
-  ++offset;
-
-  proto_tree_add_item(tree, &hfi_msg_mnb_vchsig, tvb, offset, field_length, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
-  offset += field_length; //66;
+  offset = create_signature_tree(tree, tvb, &hfi_msg_mnb_vchsig, offset);
 
   // Sig Time
   proto_tree_add_item(tree, &hfi_msg_mnb_sigtime, tvb, offset, 8, ENC_LITTLE_ENDIAN);
@@ -2462,8 +2461,20 @@ dissect_dash_msg_mnw(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   offset += 4;
 
   // Payee address (CScript)
+  gint        varint_length;
+  guint64     varint;
+  gint        string_length;
+
+  /* First is the length of the following string as a varint  */
+  get_varint(tvb, offset, &varint_length, &varint);
+  string_length = (gint) varint;
+  offset += varint_length;
+
+  ti = proto_tree_add_item(tree, &hfi_msg_mnw_payeeaddress, tvb, offset, string_length, ENC_NA);
+  offset += string_length;
 
   // Signature of Masternode signing message (char[])
+  offset = create_signature_tree(tree, tvb, &hfi_msg_mnw_sig, offset);
 
   return offset;
 }
@@ -2507,10 +2518,10 @@ dissect_dash_msg_mnv(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   offset += 4;
 
   // vchSig1
-  proto_tree_add_item(tree, &hfi_msg_mnv_vchsig1, tvb, offset, 67, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
+  offset = create_signature_tree(tree, tvb, &hfi_msg_mnv_vchsig1, offset);
 
   // vchSig2
-  proto_tree_add_item(tree, &hfi_msg_mnv_vchsig2, tvb, offset, 67, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
+  offset = create_signature_tree(tree, tvb, &hfi_msg_mnv_vchsig2, offset);
 
   return offset;
 }
@@ -2523,7 +2534,6 @@ dissect_dash_msg_dstx(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, v
 {
   proto_item *ti;
   guint32     offset = 0;
-  guint8 field_length = 0;
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_dstx, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
@@ -2535,12 +2545,7 @@ dissect_dash_msg_dstx(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, v
   offset = create_ctxin_tree(tvb, ti, offset);
 
   // vchSig
-  field_length = tvb_get_guint8(tvb, offset);
-  proto_tree_add_item(tree, &hfi_msg_field_size, tvb, offset, 1, ENC_LITTLE_ENDIAN);
-  ++offset;
-
-  proto_tree_add_item(tree, &hfi_msg_dstx_vchsig, tvb, offset, field_length, ENC_NA);
-  offset += field_length;
+  offset = create_signature_tree(tree, tvb, &hfi_msg_dstx_vchsig, offset);
 
   // sigTime - Signature time for this ping
   proto_tree_add_item(tree, &hfi_msg_dstx_sigtime, tvb, offset, 8, ENC_LITTLE_ENDIAN);
@@ -2726,7 +2731,6 @@ dissect_dash_msg_govobj(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree,
 {
   proto_item *ti;
   guint32     offset = 0;
-  guint32 field_length = 0;
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_govobj, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
@@ -2758,13 +2762,7 @@ dissect_dash_msg_govobj(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree,
   offset = create_ctxin_tree(tvb, ti, offset);
 
   // vchSig - Signature of this message by masternode (verifiable via pubKeyMasternode)
-  //proto_tree_add_item(tree, &hfi_msg_govobj_vchsig, tvb, offset, 66, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 66
-  field_length = tvb_get_guint8(tvb, offset);
-  proto_tree_add_item(tree, &hfi_msg_field_size, tvb, offset, 1, ENC_LITTLE_ENDIAN);
-  ++offset;
-
-  proto_tree_add_item(tree, &hfi_msg_govobj_vchsig, tvb, offset, field_length, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
-  offset += field_length; //66;
+  offset = create_signature_tree(tree, tvb, &hfi_msg_govobj_vchsig, offset);
 
   return offset;
 }
@@ -2852,7 +2850,7 @@ dissect_dash_msg_spork(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, 
   offset += 8;
 
   // vchSig - 
-  proto_tree_add_item(tree, &hfi_dash_msg_spork_vchsig, tvb, offset, 66, ENC_NA);
+  offset = create_signature_tree(tree, tvb, &hfi_dash_msg_spork_vchsig, offset);
 
   return offset;
 }
@@ -3186,6 +3184,8 @@ proto_register_dash(void)
     /* mnw message */
     &hfi_dash_msg_mnw,
     &hfi_dash_msg_mnw_payheight,
+    &hfi_msg_mnw_payeeaddress,
+    &hfi_msg_mnw_sig,
 
     /* mnwb message */
     &hfi_dash_msg_mnwb,

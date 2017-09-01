@@ -23,19 +23,19 @@ dsa | Y | Y* | Untested | Darksend Accept
 dsc | Y | Y |  | Darksend Complete
 dseg | Y | Y |  | Masternode List/Entry Sync
 dsf | Y | Y |  | Darksend Final Transaction
-dsi | Y |  |  | Darksend Entry
+dsi | Y | |  | Darksend Entry
 dsq | Y | Y |  | Darksend Queue
 dssu | Y | Y |  | Mixing Pool Status Update
 dstx | Y | Y |  | Darksend Broadcast
 govobj | Y | Y |  | Governance Object
 govobjvote | Y | Y |  | Governance Vote
-govsync | Y | Partial |  | Governance Vote
+govsync | Y | Partial | Bloom Filter not dissected | Governance Vote
 ix | Y | Y |  | Transaction Lock Request (InstantSend)
 mnb | Y | Y |  | Masternode Broadcast
 mnget | Y | Y |  | Masternode Payment Sync
 mnp | Y | Y |  | Masternode Ping
 mnv | Y | Y* | Untested | Masternode Verify
-mnw | Y | Partial |  | Masternode Payment Vote
+mnw | Y | Y |  | Masternode Payment Vote
 mnwb | Y | NA | Inventory only | Masternode Payment Block (no message - inventory only)
 spork| Y | Y |  | Spork status
 ssc | Y | Y |  | Sync Status Count
