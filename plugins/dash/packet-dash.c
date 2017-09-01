@@ -2559,7 +2559,7 @@ dissect_dash_msg_dsf(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   offset += 4;
 
   // Tx Final
-  offset = dissect_dash_msg_tx_common(tvb, 0, pinfo, tree, 0);
+  offset = dissect_dash_msg_tx_common(tvb, offset, pinfo, tree, 0);
 
   return offset;
 }

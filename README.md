@@ -20,12 +20,12 @@ This shows a dissected Masternode Ping message. The packet also contains a Gover
 Name | Recognized | Dissected | Status | Description
 --- | --- | --- | --- | ---
 dsa | Y | Y* | Untested | Darksend Accept
-dsc | Y | Y* | Untested | Darksend Complete
+dsc | Y | Y |  | Darksend Complete
 dseg | Y | Y |  | Masternode List/Entry Sync
-dsf | Y | Y* | Untested | Darksend Final Transaction
+dsf | Y | Y |  | Darksend Final Transaction
 dsi | Y |  |  | Darksend Entry
 dsq | Y | Y |  | Darksend Queue
-dssu | Y | Y* | Untested | Mixing Pool Status Update
+dssu | Y | Y |  | Mixing Pool Status Update
 dstx | Y | Y |  | Darksend Broadcast
 govobj | Y | Y |  | Governance Object
 govobjvote | Y | Y |  | Governance Vote
