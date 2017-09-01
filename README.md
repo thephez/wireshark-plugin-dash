@@ -39,4 +39,4 @@ mnw | Y | Partial |  | Masternode Payment Vote
 mnwb | Y | NA | Inventory only | Masternode Payment Block (no message - inventory only)
 spork| Y | Y |  | Spork status
 ssc | Y | Y |  | Sync Status Count
-txlvote | Y | N |  | Transaction Lock Vote
+txlvote | Y | Y |  | Transaction Lock Vote

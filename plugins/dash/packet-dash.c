@@ -276,6 +276,9 @@ static header_field_info hfi_msg_pubkey_type DASH_HFI_INIT =
 static header_field_info hfi_dash_cpubkey DASH_HFI_INIT =
   { "Public Key", "dash.cpubkey", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
+/* COutPoint structure */
+static header_field_info hfi_dash_coutpoint DASH_HFI_INIT =
+  { "Outpoint", "dash.coutpoint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* version message */
 static header_field_info hfi_dash_msg_version DASH_HFI_INIT =
@@ -975,6 +978,18 @@ static header_field_info hfi_dash_msg_ix DASH_HFI_INIT =
 static header_field_info hfi_dash_msg_txlvote DASH_HFI_INIT =
   { "Transaction Lock Vote message", "dash.txlvote", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
+static header_field_info hfi_msg_txlvote_txhash DASH_HFI_INIT =
+  { "Transaction hash", "dash.txlvote.txhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_txlvote_outpoint DASH_HFI_INIT =
+  { "Output to lock", "dash.txlvote.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_txlvote_outpoint_masternode DASH_HFI_INIT =
+  { "Masternode output", "dash.txlvote.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, "The utxo of the masternode which is signing the vote", HFILL };
+
+static header_field_info hfi_msg_txlvote_vchsig DASH_HFI_INIT =
+  { "Masternode Signature", "dash.txlvote.vchsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
 /* govobj - Governance Object
 	A proposal, contract or setting.
 */
@@ -1259,6 +1274,43 @@ static char * change_hash_endianness(tvbuff_t *tvb, guint32 offset, char *bytest
 }
 
 /**
+ * Create a sub-tree and fill it with a COutputPoint structure
+ */
+static int //proto_tree *
+create_coutputpoint_tree(tvbuff_t *tvb, proto_item *ti, header_field_info* hfi, guint32 offset)
+{
+  proto_tree *tree;
+  tree = proto_item_add_subtree(ti, ett_address);
+
+  //gint        count_length;
+
+  /* COutPoint
+   *   [32] hash    uint256
+   *   [4]  n       uint32_t
+   *
+   */
+
+  proto_tree *subtree;
+
+  /* A funny script_length won't cause an exception since the field type is FT_NONE */
+  ti = proto_tree_add_item(tree, hfi, tvb, offset, 36, ENC_NA);
+  subtree = proto_item_add_subtree(ti, ett_tx_in_list);
+
+  // Correct hash (little endian)
+  char bytestring[128];
+  change_hash_endianness(tvb, offset, bytestring);
+  proto_tree_add_string(subtree, &hfi_msg_tx_in_prev_outp_hash_reversed, tvb, offset, 32, bytestring); //tvb_bytes_to_str(wmem_packet_scope(), tvb, offset, 32));
+  proto_tree_add_item(subtree, &hfi_msg_tx_in_prev_outp_hash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  // Index
+  proto_tree_add_item(subtree, &hfi_msg_tx_in_prev_outp_index, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  return offset; //tree;
+}
+
+/**
  * Create a sub-tree and fill it with a CTxIn structure
  */
 static int //proto_tree *
@@ -1417,6 +1469,26 @@ create_cpubkey_tree(proto_tree *tree, tvbuff_t *tvb, proto_item *ti, header_fiel
 
   return offset;
 }
+
+/**
+ * Add signature to tree
+ */
+static int //proto_tree *
+create_signature_tree(proto_tree *tree, tvbuff_t *tvb, header_field_info* hfi, guint32 offset)
+{
+  guint8 field_length = 0;
+
+  // Sig
+  field_length = tvb_get_guint8(tvb, offset);
+  //proto_tree_add_item(tree, &hfi_msg_field_size, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+  ++offset;
+
+  proto_tree_add_item(tree, hfi, tvb, offset, field_length, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
+  offset += field_length; //66;
+
+  return offset;
+}
+
 
 static proto_tree *
 create_string_tree(proto_tree *tree, header_field_info* hfi, tvbuff_t *tvb, guint32* offset)
@@ -2630,6 +2702,19 @@ dissect_dash_msg_txlvote(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_txlvote, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
+  // Parent Hash
+  proto_tree_add_item(tree, &hfi_msg_txlvote_txhash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  // Outpoint
+  offset = create_coutputpoint_tree(tvb, ti, &hfi_msg_txlvote_outpoint, offset);
+
+  // Outpoint Masternode
+  offset = create_coutputpoint_tree(tvb, ti, &hfi_msg_txlvote_outpoint_masternode, offset);
+
+  // Signature
+  offset = create_signature_tree(tree, tvb, &hfi_msg_txlvote_vchsig, offset);
+
   return offset;
 }
 
@@ -2678,7 +2763,7 @@ dissect_dash_msg_govobj(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree,
   proto_tree_add_item(tree, &hfi_msg_field_size, tvb, offset, 1, ENC_LITTLE_ENDIAN);
   ++offset;
 
-  proto_tree_add_item(tree, &hfi_msg_mnb_vchsig, tvb, offset, field_length, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
+  proto_tree_add_item(tree, &hfi_msg_govobj_vchsig, tvb, offset, field_length, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
   offset += field_length; //66;
 
   return offset;
@@ -2716,7 +2801,7 @@ dissect_dash_msg_govobjvote(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
   offset += 8;
 
   // vchSig - Signature of this message by masternode (verifiable via pubKeyMasternode)
-  proto_tree_add_item(tree, &hfi_msg_govobjvote_vchsig, tvb, offset, 66, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 66
+  offset = create_signature_tree(tree, tvb, &hfi_msg_govobjvote_vchsig, offset);
 
   return offset;
 }
@@ -2878,6 +2963,7 @@ proto_register_dash(void)
     &hfi_msg_pubkey_type,
 
     &hfi_dash_cpubkey,
+    &hfi_dash_coutpoint,
 
     /* version message */
     &hfi_dash_msg_version,
@@ -3158,6 +3244,10 @@ proto_register_dash(void)
 
     /* txlvote message */
     &hfi_dash_msg_txlvote,
+    &hfi_msg_txlvote_txhash,
+    &hfi_msg_txlvote_outpoint,
+    &hfi_msg_txlvote_outpoint_masternode,
+    &hfi_msg_txlvote_vchsig,
 
     /* govobj message */
     &hfi_dash_msg_govobj,
