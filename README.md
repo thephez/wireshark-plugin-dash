@@ -19,7 +19,7 @@ This shows a dissected Masternode Ping message. The packet also contains a Gover
 ## Dash specific protocol implementation status (excludes items shared with the Bitcoin protocol)
 Name | Recognized | Dissected | Status | Description
 --- | --- | --- | --- | ---
-dsa | Y | Y* | Untested | Darksend Accept
+[dsa](https://github.com/thephez/dash/blob/doc-updates/dash-docs/protocol-documentation.md#dsaccept---dsa) | Y | Y* | Untested | Darksend Accept
 dsc | Y | Y |  | Darksend Complete
 dseg | Y | Y |  | Masternode List/Entry Sync
 dsf | Y | Y |  | Darksend Final Transaction
