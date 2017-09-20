@@ -173,6 +173,54 @@ static const value_string private_send_denomination[] =
   { 0x08, "0.01 DASH" },
 };
 
+static const value_string pool_message[] =
+{
+  // Defined in src/privatesend.h
+  // https://github.com/dashpay/dash/blob/master/src/privatesend.h
+  { 0, "ERR_ALREADY_HAVE"},
+  { 1, "ERR_DENOM" },
+  { 2, "ERR_ENTRIES_FULL" },
+  { 3, "ERR_EXISTING_TX" },
+  { 4, "ERR_FEES" },
+  { 5, "ERR_INVALID_COLLATERAL" },
+  { 6, "ERR_INVALID_INPUT" },
+  { 7, "ERR_INVALID_SCRIPT" },
+  { 8, "ERR_INVALID_TX" },
+  { 9, "ERR_MAXIMUM" },
+  { 10, "ERR_MN_LIST" },
+  { 11, "ERR_MODE" },
+  { 12, "ERR_NON_STANDARD_PUBKEY" },
+  { 13, "ERR_NOT_A_MN" }, // Not used
+  { 14, "ERR_QUEUE_FULL" },
+  { 15, "ERR_RECENT" },
+  { 16, "ERR_SESSION" },
+  { 17, "ERR_MISSING_TX" },
+  { 18, "ERR_VERSION" },
+  { 19, "MSG_NOERR" },
+  { 20, "MSG_SUCCESS" },
+  { 21, "MSG_ENTRIES_ADDED" },
+};
+
+static const value_string pool_state[] =
+{
+  // Defined in src/darksend.h
+  // https://github.com/dashpay/dash/blob/master/src/darksend.h
+  { 0, "POOL_STATE_IDLE"},
+  { 1, "POOL_STATE_QUEUE" },
+  { 2, "POOL_STATE_ACCEPTING_ENTRIES" },
+  { 3, "POOL_STATE_SIGNING" },
+  { 4, "POOL_STATE_ERROR" },
+  { 5, "POOL_STATE_SUCCESS" },
+};
+
+static const value_string pool_status_update[] =
+{
+  // Defined in src/darksend.h
+  // https://github.com/dashpay/dash/blob/master/src/darksend.h
+  { 0, "STATUS_REJECTED"},
+  { 1, "STATUS_ACCEPTED" },
+};
+
 static const value_string spork_description[] =
 {
   // Defined in src/spork.h 
@@ -886,13 +934,13 @@ static header_field_info hfi_dash_msg_dssu_session_id DASH_HFI_INIT =
   { "Session ID", "dash.dssu.session", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_dash_msg_dssu_state DASH_HFI_INIT =
-  { "State", "dash.dssu.state", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+  { "State", "dash.dssu.state", FT_UINT32, BASE_DEC, VALS(pool_state), 0x0, NULL, HFILL };
 
 static header_field_info hfi_dash_msg_dssu_entries DASH_HFI_INIT =
   { "Entries", "dash.dssu.entries", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_dash_msg_dssu_status_update DASH_HFI_INIT =
-  { "Status Update", "dash.dssu.update", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+  { "Status Update", "dash.dssu.update", FT_UINT32, BASE_DEC, VALS(pool_status_update), 0x0, NULL, HFILL };
 
 static header_field_info hfi_dash_msg_dssu_message_id DASH_HFI_INIT =
   { "Message ID", "dash.dssu.message", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -963,7 +1011,7 @@ static header_field_info hfi_dash_msg_dsc_session_id DASH_HFI_INIT =
   { "Session ID", "dash.dsc.session", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_dash_msg_dsc_message_id DASH_HFI_INIT =
-  { "Message ID", "dash.dsc.message", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+  { "Message ID", "dash.dsc.message", FT_UINT32, BASE_DEC, VALS(pool_message), 0x0, NULL, HFILL };
 
 /* dss - Darksend Sign Final Transaction
 	User's signed inputs for a group transaction in a mixing session
