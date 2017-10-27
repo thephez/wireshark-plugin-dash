@@ -51,4 +51,8 @@ Name | Recognized | Dissected | Status | Description
 ## Example display filter
 This example of using display filters shows how to show messages related to a
 PrivateSend session.
+
+```
+ip.addr == 217.182.229.150 && (dash.dsa || (dash.dsq.ready==1) || dash.dsi || dash.dsf || dash.dss || dash.dsc || dash.dssu || dash.dstx)`
+```
 ![](plugins/dash/privatesend-session-example.png)
