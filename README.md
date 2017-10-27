@@ -54,6 +54,6 @@ PrivateSend session.
 
 ```
 ip.addr == 217.182.229.150 && (dash.dsa || (dash.dsq.ready==1) || dash.dsi || \
-  dash.dsf || dash.dss || dash.dsc || dash.dssu || dash.dstx)`
+  dash.dsf || dash.dss || dash.dsc || dash.dssu || dash.dstx)
 ```
 ![](plugins/dash/privatesend-session-example.png)
