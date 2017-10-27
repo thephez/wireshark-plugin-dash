@@ -943,15 +943,15 @@ static header_field_info hfi_dash_msg_dssu_status_update DASH_HFI_INIT =
   { "Status Update", "dash.dssu.update", FT_UINT32, BASE_DEC, VALS(pool_status_update), 0x0, NULL, HFILL };
 
 static header_field_info hfi_dash_msg_dssu_message_id DASH_HFI_INIT =
-  { "Message ID", "dash.dssu.message", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+  { "Message ID", "dash.dssu.message", FT_UINT32, BASE_DEC, VALS(pool_message), 0x0, NULL, HFILL };
 
 /* dsq message - Darksend Queue 
 	Field Size 	Field Name 	Data type 	Description
 	4 		nDenom 		int 		Which denomination is allowed in this mixing session
 	41 		vin 		CTxIn 		Unspent output from masternode which is hosting this session
-	4 		nTime 		int 		The time this DSQ was created
-	4 		fReady 		int 		If the mixing pool is ready to be executed
-	71-73 		vchSig 		char[] 		Signature of this message by masternode (verifiable via pubKeyMasternode)
+	8 		nTime 		int64_t 		The time this DSQ was created
+	1 		fReady 		bool 		If the mixing pool is ready to be executed
+	66 		vchSig 		char[] 		Signature of this message by masternode (verifiable via pubKeyMasternode)
 */
 static header_field_info hfi_dash_msg_dsq DASH_HFI_INIT =
   { "Darksend Queue message", "dash.dsq", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -969,10 +969,10 @@ static header_field_info hfi_msg_dsq_vin_seq DASH_HFI_INIT =
   { "Sequence", "dash.dsq.vin.seq", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_dsq_time DASH_HFI_INIT =
-  { "Create Time", "dash.dsq.time", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+  { "Create Time", "dash.dsq.time", FT_ABSOLUTE_TIME, ABSOLUTE_TIME_LOCAL, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_dsq_ready DASH_HFI_INIT =
-  { "Ready", "dash.dsq.ready", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+  { "Ready", "dash.dsq.ready", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_dsq_vchsig DASH_HFI_INIT =
   { "Masternode Signature", "dash.dsq.vchsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -1201,7 +1201,7 @@ create_signature_tree(proto_tree *tree, tvbuff_t *tvb, header_field_info* hfi, g
 
   // Sig
   field_length = tvb_get_guint8(tvb, offset);
-  //proto_tree_add_item(tree, &hfi_msg_field_size, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+  proto_tree_add_item(tree, &hfi_msg_field_size, tvb, offset, 1, ENC_LITTLE_ENDIAN);
   ++offset;
 
   proto_tree_add_item(tree, hfi, tvb, offset, field_length, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
@@ -1709,7 +1709,7 @@ dissect_dash_msg_addr(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, v
     ti = proto_tree_add_item(tree, &hfi_msg_addr_address, tvb, offset, 30, ENC_NA);
     subtree = create_address_tree(tvb, ti, offset+4);
 
-    proto_tree_add_item(subtree, &hfi_msg_addr_timestamp, tvb, offset, 4, ENC_TIME_SECS|ENC_LITTLE_ENDIAN);
+    proto_tree_add_item(subtree, &hfi_msg_addr_timestamp, tvb, offset, 4, ENC_TIME_TIMESPEC|ENC_LITTLE_ENDIAN);
     offset += 26;
     offset += 4;
   }
@@ -2087,7 +2087,7 @@ dissect_dash_msg_block(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void
   proto_tree_add_item(tree, &hfi_msg_block_merkle_root, tvb, offset, 32, ENC_NA);
   offset += 32;
 
-  proto_tree_add_item(tree, &hfi_msg_block_time,        tvb, offset,  4, ENC_TIME_SECS|ENC_LITTLE_ENDIAN);
+  proto_tree_add_item(tree, &hfi_msg_block_time,        tvb, offset,  4, ENC_TIME_TIMESPEC|ENC_LITTLE_ENDIAN);
   offset += 4;
 
   proto_tree_add_item(tree, &hfi_msg_block_bits,        tvb, offset,  4, ENC_LITTLE_ENDIAN);
@@ -2148,7 +2148,7 @@ dissect_dash_msg_headers(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree
     proto_tree_add_item(subtree, &hfi_msg_headers_merkle_root, tvb, offset, 32, ENC_NA);
     offset += 32;
 
-    proto_tree_add_item(subtree, &hfi_msg_headers_time, tvb, offset, 4, ENC_TIME_SECS|ENC_LITTLE_ENDIAN);
+    proto_tree_add_item(subtree, &hfi_msg_headers_time, tvb, offset, 4, ENC_TIME_TIMESPEC|ENC_LITTLE_ENDIAN);
     offset += 4;
 
     proto_tree_add_item(subtree, &hfi_msg_headers_bits, tvb, offset, 4, ENC_LITTLE_ENDIAN);
@@ -2301,7 +2301,7 @@ dissect_dash_msg_merkleblock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *
   proto_tree_add_item(tree, &hfi_msg_merkleblock_merkle_root, tvb, offset, 32, ENC_NA);
   offset += 32;
 
-  proto_tree_add_item(tree, &hfi_msg_merkleblock_time, tvb, offset, 4, ENC_TIME_SECS|ENC_LITTLE_ENDIAN);
+  proto_tree_add_item(tree, &hfi_msg_merkleblock_time, tvb, offset, 4, ENC_TIME_TIMESPEC|ENC_LITTLE_ENDIAN);
   offset += 4;
 
   proto_tree_add_item(tree, &hfi_msg_merkleblock_bits, tvb, offset, 4, ENC_LITTLE_ENDIAN);
@@ -2418,16 +2418,15 @@ dissect_dash_msg_dsq(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   offset = create_ctxin_tree(tvb, ti, offset);
 
   // Time - the time this DSQ was created
-  proto_tree_add_item(tree, &hfi_msg_dsq_time, tvb, offset, 4, ENC_LITTLE_ENDIAN);
-  offset += 4;
+  proto_tree_add_item(tree, &hfi_msg_dsq_time, tvb, offset, 8, ENC_LITTLE_ENDIAN);
+  offset += 8;
 
   // Ready - if the mixing pool is ready to be executed
-  proto_tree_add_item(tree, &hfi_msg_dsq_ready, tvb, offset, 4, ENC_NA);
-  offset += 4;
+  proto_tree_add_item(tree, &hfi_msg_dsq_ready, tvb, offset, 1, ENC_NA);
+  offset += 1;
 
   // vchSig - Signature of this message by masternode (verifiable via pubKeyMasternode)
-  //offset = create_signature_tree(tree, tvb, &hfi_msg_dsq_vchsig, offset); - This should be used, but there appears to be an extra "00" between the create time and the sig
-  proto_tree_add_item(tree, &hfi_msg_dsq_vchsig, tvb, offset, 67, ENC_NA);  // Should be 71-73 chars per documentation, but always seems to be 67
+  offset = create_signature_tree(tree, tvb, &hfi_msg_dsq_vchsig, offset);
 
   return offset;
 }
@@ -2648,7 +2647,8 @@ dissect_dash_msg_dsa(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   proto_tree_add_item(tree, &hfi_dash_msg_dsa_denom, tvb, offset, 4, ENC_LITTLE_ENDIAN);
   offset += 4;
 
-  offset = create_ctxin_tree(tvb, ti, offset);
+  // Collateral Tx
+  offset = dissect_dash_msg_tx_common(tvb, offset, pinfo, tree, 0);
 
   return offset;
 }
@@ -2662,8 +2662,134 @@ dissect_dash_msg_dsi(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   proto_item *ti;
   guint32     offset = 0;
 
+  gint        length;
+  guint64     count;
+  gint        count_length;
+
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_dsi, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+    /* TxIn[] */
+  get_varint(tvb, offset, &length, &count);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_tx_in_count8, &hfi_msg_tx_in_count16,
+                  &hfi_msg_tx_in_count32, &hfi_msg_tx_in_count64);
+
+  offset += length;
+
+  /* TxIn
+   *   [36]  previous_output    outpoint
+   *   [1+]  script length      var_int
+   *   [ ?]  signature script   uchar[]
+   *   [ 4]  sequence           uint32_t
+   *
+   * outpoint (aka previous output)
+   *   [32]  hash               char[32
+   *   [ 4]  index              uint32_t
+   *
+   */
+
+  // This needs to be redone (same logic for CTxIn used multiple places)
+  for (; count > 0; count--)
+  {
+    proto_tree *subtree;
+    proto_tree *prevtree;
+    //proto_item *ti;
+    proto_item *pti;
+    guint64     script_length;
+    guint32     scr_len_offset;
+
+    scr_len_offset = offset+36;
+    get_varint(tvb, scr_len_offset, &count_length, &script_length);
+
+    /* A funny script_length won't cause an exception since the field type is FT_NONE */
+    ti = proto_tree_add_item(tree, &hfi_msg_tx_in, tvb, offset,
+        36 + count_length + (guint)script_length + 4, ENC_NA);
+    subtree = proto_item_add_subtree(ti, ett_tx_in_list);
+
+    /* previous output */
+    pti = proto_tree_add_item(subtree, &hfi_msg_tx_in_prev_output, tvb, offset, 36, ENC_NA);
+    prevtree = proto_item_add_subtree(pti, ett_tx_in_outp);
+
+    // Reversed endian
+    char bytestring[128];
+    change_hash_endianness(tvb, offset, bytestring);
+    proto_tree_add_string(prevtree, &hfi_msg_tx_in_prev_outp_hash_reversed, tvb, offset, 32, bytestring);
+
+    // Original endian
+    proto_tree_add_item(prevtree, &hfi_msg_tx_in_prev_outp_hash, tvb, offset, 32, ENC_NA);
+    offset += 32;
+
+    proto_tree_add_item(prevtree, &hfi_msg_tx_in_prev_outp_index, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+    offset += 4;
+    /* end previous output */
+
+    add_varint_item(subtree, tvb, offset, count_length, &hfi_msg_tx_in_script8, &hfi_msg_tx_in_script16,
+                    &hfi_msg_tx_in_script32, &hfi_msg_tx_in_script64);
+
+    offset += count_length;
+
+    if ((offset + script_length) > G_MAXINT) {
+      proto_tree_add_expert(tree, pinfo, &ei_dash_script_len,
+          tvb, scr_len_offset, count_length);
+      return G_MAXINT;
+    }
+
+    proto_tree_add_item(subtree, &hfi_msg_tx_in_sig_script, tvb, offset, (guint)script_length, ENC_NA);
+    offset += (guint)script_length;
+
+    proto_tree_add_item(subtree, &hfi_msg_tx_in_seq, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+    offset += 4;
+  }
+
+  // Collateral Tx
+  offset = dissect_dash_msg_tx_common(tvb, offset, pinfo, tree, 0);
+
+    /* TxOut[] */
+  get_varint(tvb, offset, &count_length, &count);
+  add_varint_item(tree, tvb, offset, count_length, &hfi_msg_tx_out_count8, &hfi_msg_tx_out_count16,
+                  &hfi_msg_tx_out_count32, &hfi_msg_tx_out_count64);
+
+  offset += count_length;
+
+
+  // This needs to be redone (same logic for CTxOut used multiple places)
+  /*  TxOut
+   *    [ 8] value
+   *    [1+] script length [var_int]
+   *    [ ?] script
+   */
+  for (; count > 0; count--)
+  {
+    proto_tree *subtree;
+    guint64     script_length;
+    guint32     scr_len_offset;
+
+    scr_len_offset = offset+8;
+    get_varint(tvb, scr_len_offset, &count_length, &script_length);
+
+    /* A funny script_length won't cause an exception since the field type is FT_NONE */
+    ti = proto_tree_add_item(tree, &hfi_msg_tx_out, tvb, offset,
+                             8 + count_length + (guint)script_length , ENC_NA);
+    subtree = proto_item_add_subtree(ti, ett_tx_out_list);
+
+    proto_tree_add_item(subtree, &hfi_msg_tx_out_value, tvb, offset, 8, ENC_LITTLE_ENDIAN);
+    offset += 8;
+
+    add_varint_item(subtree, tvb, offset, count_length, &hfi_msg_tx_out_script8, &hfi_msg_tx_out_script16,
+                    &hfi_msg_tx_out_script32, &hfi_msg_tx_out_script64);
+
+    offset += count_length;
+
+    if ((offset + script_length) > G_MAXINT) {
+      proto_tree_add_expert(tree, pinfo, &ei_dash_script_len,
+          tvb, scr_len_offset, count_length);
+      return G_MAXINT;
+    }
+
+    proto_tree_add_item(subtree, &hfi_msg_tx_out_script, tvb, offset, (guint)script_length, ENC_NA);
+    offset += (guint)script_length;
+  }
+
 
   return offset;
 }
@@ -2698,8 +2824,84 @@ dissect_dash_msg_dss(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   proto_item *ti;
   guint32     offset = 0;
 
+  gint        length;
+  guint64     count;
+  gint        count_length;
+
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_dss, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+    /* TxIn[] */
+  get_varint(tvb, offset, &length, &count);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_tx_in_count8, &hfi_msg_tx_in_count16,
+                  &hfi_msg_tx_in_count32, &hfi_msg_tx_in_count64);
+
+  offset += length;
+
+  /* TxIn
+   *   [36]  previous_output    outpoint
+   *   [1+]  script length      var_int
+   *   [ ?]  signature script   uchar[]
+   *   [ 4]  sequence           uint32_t
+   *
+   * outpoint (aka previous output)
+   *   [32]  hash               char[32
+   *   [ 4]  index              uint32_t
+   *
+   */
+
+  // This needs to be redone (same logic for CTxIn used multiple places)
+  for (; count > 0; count--)
+  {
+    proto_tree *subtree;
+    proto_tree *prevtree;
+    //proto_item *ti;
+    proto_item *pti;
+    guint64     script_length;
+    guint32     scr_len_offset;
+
+    scr_len_offset = offset+36;
+    get_varint(tvb, scr_len_offset, &count_length, &script_length);
+
+    /* A funny script_length won't cause an exception since the field type is FT_NONE */
+    ti = proto_tree_add_item(tree, &hfi_msg_tx_in, tvb, offset,
+        36 + count_length + (guint)script_length + 4, ENC_NA);
+    subtree = proto_item_add_subtree(ti, ett_tx_in_list);
+
+    /* previous output */
+    pti = proto_tree_add_item(subtree, &hfi_msg_tx_in_prev_output, tvb, offset, 36, ENC_NA);
+    prevtree = proto_item_add_subtree(pti, ett_tx_in_outp);
+
+    // Reversed endian
+    char bytestring[128];
+    change_hash_endianness(tvb, offset, bytestring);
+    proto_tree_add_string(prevtree, &hfi_msg_tx_in_prev_outp_hash_reversed, tvb, offset, 32, bytestring);
+
+    // Original endian
+    proto_tree_add_item(prevtree, &hfi_msg_tx_in_prev_outp_hash, tvb, offset, 32, ENC_NA);
+    offset += 32;
+
+    proto_tree_add_item(prevtree, &hfi_msg_tx_in_prev_outp_index, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+    offset += 4;
+    /* end previous output */
+
+    add_varint_item(subtree, tvb, offset, count_length, &hfi_msg_tx_in_script8, &hfi_msg_tx_in_script16,
+                    &hfi_msg_tx_in_script32, &hfi_msg_tx_in_script64);
+
+    offset += count_length;
+
+    if ((offset + script_length) > G_MAXINT) {
+      proto_tree_add_expert(tree, pinfo, &ei_dash_script_len,
+          tvb, scr_len_offset, count_length);
+      return G_MAXINT;
+    }
+
+    proto_tree_add_item(subtree, &hfi_msg_tx_in_sig_script, tvb, offset, (guint)script_length, ENC_NA);
+    offset += (guint)script_length;
+
+    proto_tree_add_item(subtree, &hfi_msg_tx_in_seq, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+    offset += 4;
+  }
 
   return offset;
 }
@@ -3394,7 +3596,8 @@ proto_reg_handoff_dash(void)
 {
   dissector_handle_t command_handle;
 
-  dissector_add_for_decode_as_with_preference("tcp.port", dash_handle);
+  dissector_add_for_decode_as("tcp.port", dash_handle);
+  //dissector_add_for_decode_as_with_preference("tcp.port", dash_handle);
 
   heur_dissector_add( "tcp", dissect_dash_heur, "Dash over TCP", "dash_tcp", hfi_dash->id, HEURISTIC_ENABLE);
 
