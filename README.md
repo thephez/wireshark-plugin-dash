@@ -3,7 +3,7 @@ A Dash protocol dissector converted from the bitcoin built-in dissector and upda
 
 Current limitations:
  - Masternode verify message (`mnv`) is not fully dissected. No examples of this message have been seen in hours of network captures.
- - Governance object (`govobj`)data field is not dissected
+ - Governance object (`govobj`) data field is not dissected
  - Bloom filters are not dissected
  - The script field of TxOuts is not dissected
 
@@ -29,7 +29,7 @@ Name | Recognized | Dissected | Status | Description
 [dsc](https://github.com/thephez/dash/blob/doc-updates/dash-docs/protocol-documentation.md#dscomplete---dsc) | Y | Y |  | Darksend Complete
 [dseg](https://github.com/thephez/dash/blob/doc-updates/dash-docs/protocol-documentation.md#dseg---dseg) | Y | Y |  | Masternode List/Entry Sync
 [dsf](https://github.com/thephez/dash/blob/doc-updates/dash-docs/protocol-documentation.md#dsfinaltx---dsf) | Y | Y |  | Darksend Final Transaction
-[dsi](https://github.com/thephez/dash/blob/doc-updates/dash-docs/protocol-documentation.md#dsvin---dsi) | Y | |  | Darksend Entry
+[dsi](https://github.com/thephez/dash/blob/doc-updates/dash-docs/protocol-documentation.md#dsvin---dsi) | Y | Y |  | Darksend Entry
 [dsq](https://github.com/thephez/dash/blob/doc-updates/dash-docs/protocol-documentation.md#dsqueue---dsq) | Y | Y |  | Darksend Queue
 [dss](https://github.com/thephez/dash/blob/doc-updates/dash-docs/protocol-documentation.md) | Y | Y |  | Darksend Sign Final Transaction
 [dssu](https://github.com/thephez/dash/blob/doc-updates/dash-docs/protocol-documentation.md#dsstatusupdate---dssu) | Y | Y |  | Mixing Pool Status Update
