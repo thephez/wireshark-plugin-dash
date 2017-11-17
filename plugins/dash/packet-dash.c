@@ -2553,6 +2553,12 @@ dissect_dash_msg_mnv(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnv, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
+  // vin - Unspent output for the masternode which is voting (CTxIn)
+  offset = create_ctxin_tree(tvb, ti, offset);
+
+  // vin - Unspent output for the masternode which is voting (CTxIn)
+  offset = create_ctxin_tree(tvb, ti, offset);
+
   // Add IP address/port (CService)
   offset = create_cservice_tree(tvb, ti, offset);
 
