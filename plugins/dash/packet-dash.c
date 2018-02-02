@@ -1820,6 +1820,7 @@ dissect_dash_msg_notfound(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tre
 
     proto_tree_add_item(subtree, &hfi_msg_notfound_hash, tvb, offset, 32, ENC_NA);
     offset += 32;
+
   }
 
   return offset;
@@ -3061,7 +3062,7 @@ dissect_dash_msg_govobjvote(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
 }
 
 /**
- * Handler for govsync messages
+ * Handler for govsync message
  */
 static int
 dissect_dash_msg_govsync(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
@@ -3077,7 +3078,19 @@ dissect_dash_msg_govsync(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree
   offset += 32;
 
   // Bloom Filter
-  proto_tree_add_item(tree, &hfi_dash_msg_govsync_bloom_filter, tvb, offset, -1, ENC_NA);
+  create_data_tree(tree, &hfi_dash_msg_govsync_bloom_filter, tvb, &offset);
+
+  // Hash function
+  proto_tree_add_item(tree, &hfi_msg_filterload_nhashfunc, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  // Tweak parameter
+  proto_tree_add_item(tree, &hfi_msg_filterload_ntweak, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  // Flags
+  proto_tree_add_item(tree, &hfi_msg_filterload_nflags, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+  offset += 1;
 
   return offset;
 }
