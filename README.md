@@ -35,7 +35,7 @@ Name | Recognized | Dissected | Status | Description
 [dstx](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#dstx---dstx) | Y | Y |  | Darksend Broadcast
 [govobj](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#mngovernanceobject---govobj) | Y | Y |  | Governance Object
 [govobjvote](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#mngovernanceobjectvote---govobjvote) | Y | Y |  | Governance Vote
-[govsync](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#mngovernancesync---govsync) | Y | Partial | Bloom Filter not dissected | Governance Vote
+[govsync](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#mngovernancesync---govsync) | Y | Y |  | Governance Object Sync
 [ix](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#txlockrequest---ix) | Y | Y |  | Transaction Lock Request (InstantSend)
 [mnb](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#mnannounce---mnb) | Y | Y |  | Masternode Broadcast
 [mnget](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#masternodepaymentsync---mnget) | Y | Y |  | Masternode Payment Sync
