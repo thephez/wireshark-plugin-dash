@@ -22,7 +22,7 @@
 include(WiresharkPlugin)
 
 # Plugin name and version info (major minor micro extra)
-set_module_info(dash 0 0 1 0)
+set_module_info(dash 0 0 3 0)
 
 set(DISSECTOR_SRC
 	packet-dash.c
