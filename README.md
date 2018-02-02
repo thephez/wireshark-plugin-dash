@@ -3,7 +3,6 @@ A Dash protocol dissector converted from the bitcoin built-in dissector and upda
 
 Current limitations:
  - Governance object (`govobj`) data field is not dissected
- - Bloom filters are not dissected
  - The script field of TxOuts is not dissected
 
 ## To Build (on Linux Mint 17.3)
