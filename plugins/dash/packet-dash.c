@@ -868,13 +868,16 @@ static header_field_info hfi_msg_mnb_protocol_version DASH_HFI_INIT =
 /* mnp - Masternode Ping
 	Field Size 	Field Name 	Data type 	Description
 	-----------------------------------------------
-	41 		vin 		CTxIn 		The unspent output of the masternode which is signing the message
+	36 		outpoint	COutPoint	The unspent output of the masternode which is signing the message
 	32 		blockHash 	uint256 	Current chaintip blockhash minus 12
 	8 		sigTime 	int64_t 	Signature time for this ping
 	71-73 		vchSig 		char[] 		Signature of this message by masternode (verifiable via pubKeyMasternode)
 */
 static header_field_info hfi_dash_msg_mnp DASH_HFI_INIT =
   { "Masternode Ping message", "dash.mnp", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_mnp_outpoint DASH_HFI_INIT =
+  { "Masternode collateral output", "dash.mnp.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_mnp_blockhash DASH_HFI_INIT =
   { "Chaintip block hash", "dash.mnp.blockhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -1515,8 +1518,8 @@ create_cmasternodeping_tree(tvbuff_t *tvb, proto_item *ti, guint32 offset)
   proto_tree *tree;
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
-  // Add unspent output of the Masternode that signed the message (CTxIn)
-  offset = create_ctxin_tree(tvb, ti, offset);
+  // Add unspent output of the Masternode that signed the message (COutPoint)
+  offset = create_coutputpoint_tree(tvb, ti, &hfi_msg_mnp_outpoint, offset);
 
   // Block Hash - Current chaintip blockhash minus 12
   proto_tree_add_item(tree, &hfi_msg_mnp_blockhash, tvb, offset, 32, ENC_NA);
@@ -3522,6 +3525,7 @@ proto_register_dash(void)
 
     /* mnp message */
     &hfi_dash_msg_mnp,
+    &hfi_msg_mnp_outpoint,
     &hfi_msg_mnp_blockhash,
     &hfi_msg_mnp_sigtime,
     &hfi_msg_mnp_vchsig,
