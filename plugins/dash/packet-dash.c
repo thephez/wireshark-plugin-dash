@@ -56,6 +56,7 @@
 #define DASH_MAIN_MAGIC_NUMBER       0xBD6B0CBF 
 #define DASH_REGTEST_MAGIC_NUMBER    0xDCB7C1FC
 #define DASH_TESTNET3_MAGIC_NUMBER   0xFFCAE2CE
+#define DASH_DEVNET_MAGIC_NUMBER     0xCEFFCAE2
 
 static const value_string inv_types[] =
 {
@@ -3204,7 +3205,8 @@ dissect_dash_heur(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void *dat
   magic_number = tvb_get_letohl(tvb, 0);
   if ((magic_number != DASH_MAIN_MAGIC_NUMBER) &&
       (magic_number != DASH_REGTEST_MAGIC_NUMBER) &&
-      (magic_number != DASH_TESTNET3_MAGIC_NUMBER))
+      (magic_number != DASH_TESTNET3_MAGIC_NUMBER) &&
+      (magic_number != DASH_DEVNET_MAGIC_NUMBER))
      return FALSE;
 
   /* Ok: This connection should always use the dash dissector */
