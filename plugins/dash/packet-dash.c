@@ -782,6 +782,24 @@ static header_field_info hfi_address_address DASH_HFI_INIT =
 static header_field_info hfi_address_port DASH_HFI_INIT =
   { "Node port", "dash.address.port", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
+
+/* blocktxn message */
+static header_field_info hfi_dash_msg_blocktxn DASH_HFI_INIT =
+  { "Block Transaction message", "dash.blocktxn", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* cmpctblock message */
+static header_field_info hfi_dash_msg_cmpctblock DASH_HFI_INIT =
+  { "Compact Block message", "dash.cmpctblock", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* getblocktxn message */
+static header_field_info hfi_dash_msg_getblocktxn DASH_HFI_INIT =
+  { "Get Block Transaction message", "dash.getblocktxn", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* sendcmpct message */
+static header_field_info hfi_dash_msg_sendcmpct DASH_HFI_INIT =
+  { "Send Compact block message", "dash.sendcmpct", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+
 /* variable string */
 static header_field_info hfi_string_value DASH_HFI_INIT =
   { "String value", "dash.string.value", FT_STRING, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -2345,6 +2363,70 @@ dissect_dash_msg_merkleblock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *
 }
 
 /**
+ * Handler for blocktxn messages
+ */
+
+static int
+dissect_dash_msg_blocktxn(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_blocktxn, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  return tvb_captured_length(tvb);
+}
+
+/**
+ * Handler for cmpctblock messages
+ */
+
+static int
+dissect_dash_msg_cmpctblock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_cmpctblock, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  return tvb_captured_length(tvb);
+}
+
+/**
+ * Handler for getblocktxn messages
+ */
+
+static int
+dissect_dash_msg_getblocktxn(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_getblocktxn, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  return tvb_captured_length(tvb);
+}
+
+/**
+ * Handler for sendcmpct messages
+ */
+
+static int
+dissect_dash_msg_sendcmpct(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_sendcmpct, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  return tvb_captured_length(tvb);
+}
+
+/**
  * Handler for unimplemented or payload-less messages
  */
 static int
@@ -3561,6 +3643,18 @@ proto_register_dash(void)
     /* mnget message */
     &hfi_dash_msg_mnget,
     &hfi_dash_msg_mnget_count32,
+
+    /* blocktxn message */
+    &hfi_dash_msg_blocktxn,
+
+    /* cmpctblock message */
+    &hfi_dash_msg_cmpctblock,
+
+    /* getblocktxn message */
+    &hfi_dash_msg_getblocktxn,
+
+    /* sendcmpct message */
+    &hfi_dash_msg_sendcmpct,
   };
 #endif
 
@@ -3655,6 +3749,15 @@ proto_reg_handoff_dash(void)
   dissector_add_string("dash.command", "filteradd", command_handle);
   command_handle = create_dissector_handle( dissect_dash_msg_merkleblock, hfi_dash->id );
   dissector_add_string("dash.command", "merkleblock", command_handle);
+
+  command_handle = create_dissector_handle( dissect_dash_msg_blocktxn, hfi_dash->id );
+  dissector_add_string("dash.command", "blocktxn", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_cmpctblock, hfi_dash->id );
+  dissector_add_string("dash.command", "cmpctblock", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_getblocktxn, hfi_dash->id );
+  dissector_add_string("dash.command", "getblocktxn", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_sendcmpct, hfi_dash->id );
+  dissector_add_string("dash.command", "sendcmpct", command_handle);
 
   /* Dash specific commands */
   command_handle = create_dissector_handle( dissect_dash_msg_mnb, hfi_dash->id );
