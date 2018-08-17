@@ -837,7 +837,7 @@ static header_field_info hfi_data_varint_count64 DASH_HFI_INIT =
 	they will send this message which describes the masternode entry and how to validate messages from it.
 
 	Field Size 	Field Name 			Data type 		Description
-	41 		vin 				CTxIn 			The unspent output which is holding 1000 DASH
+	36 		outpoint			COutPoint		The unspent output which is holding 1000 DASH
 	# 		addr 				CService 		Address of the main 1000 DASH unspent output
 	33-65 		pubKeyCollateralAddress 	CPubKey 		CPubKey of the main 1000 DASH unspent output
 	33-65 		pubKeyMasternode 		CPubKey 		CPubKey of the secondary signing key (For all other messaging other than announce message)
@@ -849,6 +849,9 @@ static header_field_info hfi_data_varint_count64 DASH_HFI_INIT =
 */
 static header_field_info hfi_dash_msg_mnb DASH_HFI_INIT =
   { "Masternode Broadcast message", "dash.mnb", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_mnb_outpoint DASH_HFI_INIT =
+  { "Masternode collateral output", "dash.mnb.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_mnb_pubkey_collateral DASH_HFI_INIT =
   { "Public Key of Masternode Collateral", "dash.mnb.collateralpubkey", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -2546,8 +2549,8 @@ dissect_dash_msg_mnb(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnb, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
-  // Add unspent output of the Masternode that signed the message (CTxIn)
-  offset = create_ctxin_tree(tvb, ti, offset);
+  // Add unspent output of the Masternode that signed the message (COutPoint)
+  offset = create_coutputpoint_tree(tvb, ti, &hfi_msg_mnb_outpoint, offset);
 
   offset = create_cservice_tree(tvb, ti, offset);
 
@@ -3532,6 +3535,7 @@ proto_register_dash(void)
 
     /* mnb message */
     &hfi_dash_msg_mnb,
+    &hfi_msg_mnb_outpoint,
     &hfi_msg_mnb_pubkey_collateral,
     &hfi_msg_mnb_pubkey_masternode,
     &hfi_msg_mnb_vchsig,
