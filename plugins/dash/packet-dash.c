@@ -2524,10 +2524,10 @@ dissect_dash_msg_dsq(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
 
   /*
   Denomination - Which denomination is allowed in this mixing session
-  1 = 100   Dash
-  2 =  10   Dash
-  4 =   1   Dash
-  8 =   0.1 Dash
+  1 =  10    Dash
+  2 =   1    Dash
+  4 =   0.1  Dash
+  8 =   0.01 Dash
   */
   proto_tree_add_item(tree, &hfi_msg_dsq_denom, tvb, offset, 4, ENC_LITTLE_ENDIAN);
   offset += 4;
