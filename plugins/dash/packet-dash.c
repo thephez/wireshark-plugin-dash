@@ -904,6 +904,9 @@ static header_field_info hfi_msg_mnp_vchsig DASH_HFI_INIT =
 static header_field_info hfi_dash_msg_mnw DASH_HFI_INIT =
   { "Masternode Payment Vote message", "dash.mnw", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
+  static header_field_info hfi_msg_mnw_outpoint DASH_HFI_INIT =
+    { "Masternode collateral output", "dash.mnw.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
 static header_field_info hfi_dash_msg_mnw_payheight DASH_HFI_INIT =
   { "Block pay height", "dash.mnw.height", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
@@ -2590,8 +2593,8 @@ dissect_dash_msg_mnw(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnw, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
-  // Add unspent output of the Masternode that signed the message (CTxIn)
-  offset = create_ctxin_tree(tvb, ti, offset);
+  // Add unspent output of the Masternode that signed the message (COutPoint)
+  offset = create_coutputpoint_tree(tvb, ti, &hfi_msg_mnw_outpoint, offset);
 
   // Block Height
   proto_tree_add_item(tree, &hfi_dash_msg_mnw_payheight, tvb, offset, 4, ENC_LITTLE_ENDIAN);
@@ -3544,6 +3547,7 @@ proto_register_dash(void)
 
     /* mnw message */
     &hfi_dash_msg_mnw,
+    &hfi_msg_mnw_outpoint,
     &hfi_dash_msg_mnw_payheight,
     &hfi_msg_mnw_payeeaddress,
     &hfi_msg_mnw_sig,
