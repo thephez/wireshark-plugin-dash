@@ -1177,7 +1177,7 @@ static header_field_info hfi_dash_msg_spork_vchsig DASH_HFI_INIT =
 /* dseg - ???
 	No documentation available
     Per src/masternodeman.c - DsegUpdate:
-    41      vin         CTxIn       ???
+    36 		outpoint	COutPoint	The unspent output of the masternode which is signing the message
 */
 static header_field_info hfi_dash_msg_dseg DASH_HFI_INIT =
   { "Dseg message", "dash.dseg", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
