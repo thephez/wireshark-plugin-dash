@@ -1202,13 +1202,14 @@ static header_field_info hfi_dash_msg_ssc_count DASH_HFI_INIT =
 /* mnget - Masternode Payment Sync
 	No documentation available
     Per src/masternode-sync.c - PushMessage(NetMsgType::MASTERNODEPAYMENTSYNC, nMnCount):
-    4       nMnCount        int             Number of masternodes?
+    4       nMnCount        int             Number of masternodes? // REMOVED in protocol version 70210
 */
 static header_field_info hfi_dash_msg_mnget DASH_HFI_INIT =
   { "Masternode Payment Sync message", "dash.mnget", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
-static header_field_info hfi_dash_msg_mnget_count32 DASH_HFI_INIT =
-  { "Count", "dash.mnget.count", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+// Removed in protocol version 70210
+//static header_field_info hfi_dash_msg_mnget_count32 DASH_HFI_INIT =
+//  { "Count", "dash.mnget.count", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
 static gint ett_dash = -1;
 static gint ett_dash_msg = -1;
@@ -3295,8 +3296,9 @@ dissect_dash_msg_mnget(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnget, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
-  proto_tree_add_item(tree, &hfi_dash_msg_mnget_count32, tvb, offset, 4, ENC_LITTLE_ENDIAN);
-  offset += 4;
+  // Removed in protocol version 70210
+  //proto_tree_add_item(tree, &hfi_dash_msg_mnget_count32, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  //offset += 4;
 
   return offset;
 }
@@ -3690,7 +3692,7 @@ proto_register_dash(void)
 
     /* mnget message */
     &hfi_dash_msg_mnget,
-    &hfi_dash_msg_mnget_count32,
+    //&hfi_dash_msg_mnget_count32, //REMOVED in protocol version 70210
 
     /* blocktxn message */
     &hfi_dash_msg_blocktxn,
