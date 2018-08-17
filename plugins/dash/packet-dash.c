@@ -837,7 +837,7 @@ static header_field_info hfi_data_varint_count64 DASH_HFI_INIT =
 	they will send this message which describes the masternode entry and how to validate messages from it.
 
 	Field Size 	Field Name 			Data type 		Description
-	41 		vin 				CTxIn 			The unspent output which is holding 1000 DASH
+	36 		outpoint			COutPoint		The unspent output which is holding 1000 DASH
 	# 		addr 				CService 		Address of the main 1000 DASH unspent output
 	33-65 		pubKeyCollateralAddress 	CPubKey 		CPubKey of the main 1000 DASH unspent output
 	33-65 		pubKeyMasternode 		CPubKey 		CPubKey of the secondary signing key (For all other messaging other than announce message)
@@ -849,6 +849,9 @@ static header_field_info hfi_data_varint_count64 DASH_HFI_INIT =
 */
 static header_field_info hfi_dash_msg_mnb DASH_HFI_INIT =
   { "Masternode Broadcast message", "dash.mnb", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_mnb_outpoint DASH_HFI_INIT =
+  { "Masternode collateral output", "dash.mnb.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_mnb_pubkey_collateral DASH_HFI_INIT =
   { "Public Key of Masternode Collateral", "dash.mnb.collateralpubkey", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -868,13 +871,16 @@ static header_field_info hfi_msg_mnb_protocol_version DASH_HFI_INIT =
 /* mnp - Masternode Ping
 	Field Size 	Field Name 	Data type 	Description
 	-----------------------------------------------
-	41 		vin 		CTxIn 		The unspent output of the masternode which is signing the message
+	36 		outpoint	COutPoint	The unspent output of the masternode which is signing the message
 	32 		blockHash 	uint256 	Current chaintip blockhash minus 12
 	8 		sigTime 	int64_t 	Signature time for this ping
 	71-73 		vchSig 		char[] 		Signature of this message by masternode (verifiable via pubKeyMasternode)
 */
 static header_field_info hfi_dash_msg_mnp DASH_HFI_INIT =
   { "Masternode Ping message", "dash.mnp", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_mnp_outpoint DASH_HFI_INIT =
+  { "Masternode collateral output", "dash.mnp.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_mnp_blockhash DASH_HFI_INIT =
   { "Chaintip block hash", "dash.mnp.blockhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -890,13 +896,16 @@ static header_field_info hfi_msg_mnp_vchsig DASH_HFI_INIT =
 	those 10 selected masternodes will issue a masternode payment vote message to pick the next winning node.
 
 	Field Size 	Field Name 	Data type 	Description
-	41 		vinMasternode 	CTxIn 		The unspent output of the masternode which is signing the message
+	36 		outpoint	COutPoint	The unspent output of the masternode which is signing the message
 	4 		nBlockHeight 	int 		The blockheight which the payee should be paid
 	? 		payeeAddress 	CScript 	The address to pay to
 	71-73 		sig 		char[] 		Signature of the masternode which is signing the message
 */
 static header_field_info hfi_dash_msg_mnw DASH_HFI_INIT =
   { "Masternode Payment Vote message", "dash.mnw", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_mnw_outpoint DASH_HFI_INIT =
+  { "Masternode collateral output", "dash.mnw.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_dash_msg_mnw_payheight DASH_HFI_INIT =
   { "Block pay height", "dash.mnw.height", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -919,6 +928,12 @@ static header_field_info hfi_dash_msg_mnwb DASH_HFI_INIT =
 static header_field_info hfi_dash_msg_mnv DASH_HFI_INIT =
   { "Masternode Verify message", "dash.mnv", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
+static header_field_info hfi_msg_mnv_outpoint1 DASH_HFI_INIT =
+  { "Masternode 1 collateral output", "dash.mnv.outpoint1", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_mnv_outpoint2 DASH_HFI_INIT =
+  { "Masternode 1 collateral output", "dash.mnv.outpoint2", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
 static header_field_info hfi_msg_mnv_nonce DASH_HFI_INIT =
   { "Nonce", "dash.mnv.nonce", FT_UINT32, BASE_HEX, NULL, 0x0, NULL, HFILL };
 
@@ -936,6 +951,9 @@ static header_field_info hfi_msg_mnv_vchsig2 DASH_HFI_INIT =
 */
 static header_field_info hfi_dash_msg_dstx DASH_HFI_INIT =
   { "Darksend Broadcast message", "dash.dstx", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_dstx_outpoint DASH_HFI_INIT =
+  { "Masternode collateral output", "dash.dstx.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_dstx_vchsig DASH_HFI_INIT =
   { "Masternode Signature", "dash.dstx.vchsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -967,7 +985,8 @@ static header_field_info hfi_dash_msg_dssu_message_id DASH_HFI_INIT =
 /* dsq message - Darksend Queue 
 	Field Size 	Field Name 	Data type 	Description
 	4 		nDenom 		int 		Which denomination is allowed in this mixing session
-	41 		vin 		CTxIn 		Unspent output from masternode which is hosting this session
+	4 		nInputCount 		int 		Number of inputs required for this mixing session
+	36 		outpoint	COutPoint	The unspent output of the masternode which is signing the message
 	8 		nTime 		int64_t 		The time this DSQ was created
 	1 		fReady 		bool 		If the mixing pool is ready to be executed
 	66 		vchSig 		char[] 		Signature of this message by masternode (verifiable via pubKeyMasternode)
@@ -977,6 +996,12 @@ static header_field_info hfi_dash_msg_dsq DASH_HFI_INIT =
 
 static header_field_info hfi_msg_dsq_denom DASH_HFI_INIT =
   { "Denomination", "dash.dsq.denom", FT_UINT32, BASE_DEC, VALS(private_send_denomination), 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_dsq_inputcount DASH_HFI_INIT =
+  { "Input Count", "dash.dsq.inputcount", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_dsq_outpoint DASH_HFI_INIT =
+  { "Masternode collateral output", "dash.dsq.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_dsq_vin_prev_outp_hash DASH_HFI_INIT =
   { "Hash", "dash.dsq.vin.prev_output.hash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -1087,6 +1112,9 @@ static header_field_info hfi_msg_govobj_strdata DASH_HFI_INIT =
 static header_field_info hfi_msg_govobj_object_type DASH_HFI_INIT =
   { "Object Type", "dash.govobj.objecttype", FT_UINT32, BASE_DEC, VALS(governance_object), 0x0, NULL, HFILL };
 
+static header_field_info hfi_msg_govobj_outpoint DASH_HFI_INIT =
+  { "Masternode collateral output", "dash.govobj.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
 static header_field_info hfi_msg_govobj_vchsig DASH_HFI_INIT =
   { "Masternode Signature", "dash.govobj.vchsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
@@ -1096,6 +1124,9 @@ static header_field_info hfi_msg_govobj_vchsig DASH_HFI_INIT =
 */
 static header_field_info hfi_dash_msg_govobjvote DASH_HFI_INIT =
   { "Masternode Governance Vote message", "dash.govobjvote", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_govobjvote_outpoint DASH_HFI_INIT =
+  { "Masternode collateral output", "dash.govobjvote.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_govobjvote_parenthash DASH_HFI_INIT =
   { "Parent hash", "dash.govobjvote.parenthash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -1146,7 +1177,7 @@ static header_field_info hfi_dash_msg_spork_vchsig DASH_HFI_INIT =
 /* dseg - ???
 	No documentation available
     Per src/masternodeman.c - DsegUpdate:
-    41      vin         CTxIn       ???
+    36 		outpoint	COutPoint	The unspent output of the masternode which is signing the message
 */
 static header_field_info hfi_dash_msg_dseg DASH_HFI_INIT =
   { "Dseg message", "dash.dseg", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -1158,6 +1189,9 @@ static header_field_info hfi_dash_msg_dseg DASH_HFI_INIT =
 */
 static header_field_info hfi_dash_msg_ssc DASH_HFI_INIT =
   { "Sync Status Count message", "dash.ssc", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_dseg_outpoint DASH_HFI_INIT =
+  { "Masternode collateral output", "dash.dseg.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_dash_msg_ssc_item_id DASH_HFI_INIT =
   { "Item ID", "dash.ssc.itemid", FT_UINT32, BASE_DEC, VALS(masternode_sync_item_id), 0x0, NULL, HFILL };
@@ -1515,8 +1549,8 @@ create_cmasternodeping_tree(tvbuff_t *tvb, proto_item *ti, guint32 offset)
   proto_tree *tree;
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
-  // Add unspent output of the Masternode that signed the message (CTxIn)
-  offset = create_ctxin_tree(tvb, ti, offset);
+  // Add unspent output of the Masternode that signed the message (COutPoint)
+  offset = create_coutputpoint_tree(tvb, ti, &hfi_msg_mnp_outpoint, offset);
 
   // Block Hash - Current chaintip blockhash minus 12
   proto_tree_add_item(tree, &hfi_msg_mnp_blockhash, tvb, offset, 32, ENC_NA);
@@ -2490,16 +2524,19 @@ dissect_dash_msg_dsq(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
 
   /*
   Denomination - Which denomination is allowed in this mixing session
-  1 = 100   Dash
-  2 =  10   Dash
-  4 =   1   Dash
-  8 =   0.1 Dash
+  1 =  10    Dash
+  2 =   1    Dash
+  4 =   0.1  Dash
+  8 =   0.01 Dash
   */
   proto_tree_add_item(tree, &hfi_msg_dsq_denom, tvb, offset, 4, ENC_LITTLE_ENDIAN);
   offset += 4;
 
-  // Add unspent output from masternode which is hosting this session (CTxIn)
-  offset = create_ctxin_tree(tvb, ti, offset);
+  proto_tree_add_item(tree, &hfi_msg_dsq_inputcount, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+
+  // Add unspent output of the Masternode that signed the message (COutPoint)
+  offset = create_coutputpoint_tree(tvb, ti, &hfi_msg_dsq_outpoint, offset);
 
   // Time - the time this DSQ was created
   proto_tree_add_item(tree, &hfi_msg_dsq_time, tvb, offset, 8, ENC_LITTLE_ENDIAN);
@@ -2543,8 +2580,8 @@ dissect_dash_msg_mnb(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnb, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
-  // Add unspent output of the Masternode that signed the message (CTxIn)
-  offset = create_ctxin_tree(tvb, ti, offset);
+  // Add unspent output of the Masternode that signed the message (COutPoint)
+  offset = create_coutputpoint_tree(tvb, ti, &hfi_msg_mnb_outpoint, offset);
 
   offset = create_cservice_tree(tvb, ti, offset);
 
@@ -2584,8 +2621,8 @@ dissect_dash_msg_mnw(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnw, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
-  // Add unspent output of the Masternode that signed the message (CTxIn)
-  offset = create_ctxin_tree(tvb, ti, offset);
+  // Add unspent output of the Masternode that signed the message (COutPoint)
+  offset = create_coutputpoint_tree(tvb, ti, &hfi_msg_mnw_outpoint, offset);
 
   // Block Height
   proto_tree_add_item(tree, &hfi_dash_msg_mnw_payheight, tvb, offset, 4, ENC_LITTLE_ENDIAN);
@@ -2678,8 +2715,8 @@ dissect_dash_msg_dstx(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, v
   // Tx
   offset = dissect_dash_msg_tx_common(tvb, 0, pinfo, tree, 0);
 
-  // CTxIn
-  offset = create_ctxin_tree(tvb, ti, offset);
+  // Add unspent output of the Masternode that signed the message (COutPoint)
+  offset = create_coutputpoint_tree(tvb, ti, &hfi_msg_dstx_outpoint, offset);
 
   // vchSig
   offset = create_signature_tree(tree, tvb, &hfi_msg_dstx_vchsig, offset);
@@ -3098,8 +3135,8 @@ dissect_dash_msg_govobj(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree,
   proto_tree_add_item(tree, &hfi_msg_govobj_object_type, tvb, offset, 4, ENC_LITTLE_ENDIAN);
   offset += 4;
 
-  // Unspent output for the masternode which is signing (CTxIn)
-  offset = create_ctxin_tree(tvb, ti, offset);
+  // Add unspent output of the Masternode that signed the message (COutPoint)
+  offset = create_coutputpoint_tree(tvb, ti, &hfi_msg_govobj_outpoint, offset);
 
   // vchSig - Signature of this message by masternode (verifiable via pubKeyMasternode)
   offset = create_signature_tree(tree, tvb, &hfi_msg_govobj_vchsig, offset);
@@ -3119,8 +3156,8 @@ dissect_dash_msg_govobjvote(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_govobjvote, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
-  // Unspent output for the masternode which is voting (CTxIn)
-  offset = create_ctxin_tree(tvb, ti, offset);
+  // Add unspent output of the Masternode that signed the message (COutPoint)
+  offset = create_coutputpoint_tree(tvb, ti, &hfi_msg_govobjvote_outpoint, offset);
 
   // Block Hash - Current chaintip blockhash minus 12
   proto_tree_add_item(tree, &hfi_msg_govobjvote_parenthash, tvb, offset, 32, ENC_NA);
@@ -3219,8 +3256,8 @@ dissect_dash_msg_dseg(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, v
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_dseg, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
-  // vin - Unspent output for the masternode which is voting (CTxIn)
-  offset = create_ctxin_tree(tvb, ti, offset);
+  // Add unspent output of the Masternode that signed the message (COutPoint)
+  offset = create_coutputpoint_tree(tvb, ti, &hfi_msg_dseg_outpoint, offset);
 
   return offset;
 }
@@ -3522,12 +3559,14 @@ proto_register_dash(void)
 
     /* mnp message */
     &hfi_dash_msg_mnp,
+    &hfi_msg_mnp_outpoint,
     &hfi_msg_mnp_blockhash,
     &hfi_msg_mnp_sigtime,
     &hfi_msg_mnp_vchsig,
 
     /* mnb message */
     &hfi_dash_msg_mnb,
+    &hfi_msg_mnb_outpoint,
     &hfi_msg_mnb_pubkey_collateral,
     &hfi_msg_mnb_pubkey_masternode,
     &hfi_msg_mnb_vchsig,
@@ -3536,6 +3575,7 @@ proto_register_dash(void)
 
     /* mnw message */
     &hfi_dash_msg_mnw,
+    &hfi_msg_mnw_outpoint,
     &hfi_dash_msg_mnw_payheight,
     &hfi_msg_mnw_payeeaddress,
     &hfi_msg_mnw_sig,
@@ -3545,6 +3585,8 @@ proto_register_dash(void)
 
     /* mnv message */
     &hfi_dash_msg_mnv,
+    &hfi_msg_mnv_outpoint1,
+    &hfi_msg_mnv_outpoint2,
     &hfi_msg_mnv_nonce,
     &hfi_msg_mnv_height,
     &hfi_msg_mnv_vchsig1,
@@ -3552,6 +3594,7 @@ proto_register_dash(void)
 
     /* dstx message */
     &hfi_dash_msg_dstx,
+    &hfi_msg_dstx_outpoint,
     &hfi_msg_dstx_vchsig,
     &hfi_msg_dstx_sigtime,
 
@@ -3566,6 +3609,8 @@ proto_register_dash(void)
     /* dsq message */
     &hfi_dash_msg_dsq,
     &hfi_msg_dsq_denom,
+    &hfi_msg_dsq_inputcount,
+    &hfi_msg_dsq_outpoint,
     &hfi_msg_dsq_vin_prev_outp_hash,
     &hfi_msg_dsq_vin_prev_outp_index,
     &hfi_msg_dsq_vin_seq,
@@ -3610,10 +3655,12 @@ proto_register_dash(void)
     &hfi_msg_govobj_collateralhash,
     &hfi_msg_govobj_strdata,
     &hfi_msg_govobj_object_type,
+    &hfi_msg_govobj_outpoint,
     &hfi_msg_govobj_vchsig,
 
     /* govobjvote message */
     &hfi_dash_msg_govobjvote,
+    &hfi_msg_govobjvote_outpoint,
     &hfi_msg_govobjvote_parenthash,
     &hfi_msg_govobjvote_voteoutcome,
     &hfi_msg_govobjvote_votesignal,
@@ -3634,6 +3681,7 @@ proto_register_dash(void)
 
     /* dseg message */
     &hfi_dash_msg_dseg,
+    &hfi_msg_dseg_outpoint,
 
     /* ssc message */
     &hfi_dash_msg_ssc,
