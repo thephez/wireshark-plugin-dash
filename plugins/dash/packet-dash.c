@@ -280,6 +280,17 @@ static const value_string pubkey_type[] =
   { 7, "UNCOMPRESSED" },
 };
 
+static const value_string special_tx_type[] =
+{
+  { 0, "Classical Transaction (No extra DIP-2 payload)" },
+  { 1, "Provider Registration (ProRegTx)" },
+  { 2, "Provider Update - Service (ProUpServTx)" },
+  { 3, "Provider Update - Registrar (ProUpRegTx)" },
+  { 4, "Provider Update - Key Revocation (ProUpRevTx)" },
+  { 5, "Coinbase (CbTx)" },
+  { 6, "RESERVED" },
+  { 7, "RESERVED" },
+};
 
 /*
  * Minimum dash identification header.
@@ -514,7 +525,10 @@ static header_field_info hfi_dash_msg_tx DASH_HFI_INIT =
   { "Tx message", "dash.tx", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_tx_version DASH_HFI_INIT =
-  { "Transaction version", "dash.tx.version", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+  { "Transaction version", "dash.tx.version", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+  static header_field_info hfi_msg_tx_type DASH_HFI_INIT =
+    { "Transaction type", "dash.tx.type", FT_UINT16, BASE_DEC, VALS(special_tx_type), 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_tx_in_script8 DASH_HFI_INIT =
   { "Script Length", "dash.tx.in.script_length", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1970,8 +1984,10 @@ dissect_dash_msg_tx_common(tvbuff_t *tvb, guint32 offset, packet_info *pinfo, pr
   }
   tree = proto_item_add_subtree(rti, ett_dash_msg);
 
-  proto_tree_add_item(tree, &hfi_msg_tx_version, tvb, offset, 4, ENC_LITTLE_ENDIAN);
-  offset += 4;
+  proto_tree_add_item(tree, &hfi_msg_tx_version, tvb, offset, 2, ENC_LITTLE_ENDIAN);
+  offset += 2;
+  proto_tree_add_item(tree, &hfi_msg_tx_type, tvb, offset, 2, ENC_LITTLE_ENDIAN);
+  offset += 2;
 
   /* TxIn[] */
   get_varint(tvb, offset, &count_length, &in_count);
@@ -3427,6 +3443,7 @@ proto_register_dash(void)
     /* tx message */
     &hfi_dash_msg_tx,
     &hfi_msg_tx_version,
+    &hfi_msg_tx_type,
 
     /* tx message - input */
     &hfi_msg_tx_in_count8,
