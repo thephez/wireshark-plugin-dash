@@ -290,6 +290,10 @@ static const value_string special_tx_type[] =
   { 5, "Coinbase (CbTx)" },
   { 6, "RESERVED" },
   { 7, "RESERVED" },
+  { 8, "Subscription - Registration (SubTxRegister)" },
+  { 9, "Subscription - Topup (SubTxTopup)" },
+  { 10, "Subscription - Key Change (SubTxResetKey)" },
+  { 11, "Subscription - Account Close (SubTxCloseAccount)" },
 };
 
 /*
