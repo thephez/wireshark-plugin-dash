@@ -604,6 +604,21 @@ static header_field_info hfi_msg_tx_out_script DASH_HFI_INIT =
 static header_field_info hfi_msg_tx_lock_time DASH_HFI_INIT =
   { "Block lock time or block ID", "dash.tx.lock_time", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
+static header_field_info hfi_msg_tx_extra_payload_size8 DASH_HFI_INIT =
+  { "Extra Payload Size", "dash.tx.extra_payload_size", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_tx_extra_payload_size16 DASH_HFI_INIT =
+  { "Extra Payload Size", "dash.tx.extra_payload_size", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_tx_extra_payload_size32 DASH_HFI_INIT =
+  { "Extra Payload Size", "dash.tx.extra_payload_size", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_tx_extra_payload_size64 DASH_HFI_INIT =
+  { "Extra Payload Size", "dash.tx.extra_payload_size", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+static header_field_info hfi_msg_tx_extra_payload DASH_HFI_INIT =
+  { "Extra Payload", "dash.tx.extra_payload", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
 /* block message */
 static header_field_info hfi_msg_block_transactions8 DASH_HFI_INIT =
   { "Number of transactions", "dash.block.num_transactions", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1980,6 +1995,10 @@ dissect_dash_msg_tx_common(tvbuff_t *tvb, guint32 offset, packet_info *pinfo, pr
   gint        count_length;
   guint64     in_count;
   guint64     out_count;
+  guint16     tx_version;
+  guint16     tx_type;
+  guint64     extra_payload_size;
+  gint        len_remaining;
 
   if (msgnum == 0) {
     rti  = proto_tree_add_item(tree, &hfi_dash_msg_tx, tvb, offset, -1, ENC_NA);
@@ -1987,6 +2006,10 @@ dissect_dash_msg_tx_common(tvbuff_t *tvb, guint32 offset, packet_info *pinfo, pr
     rti  = proto_tree_add_none_format(tree, hfi_dash_msg_tx.id, tvb, offset, -1, "Tx message [ %4d ]", msgnum);
   }
   tree = proto_item_add_subtree(rti, ett_dash_msg);
+
+  /* Get 2 byte version and type values */
+  tx_version = tvb_get_letohs(tvb, offset+1);
+  tx_type = tvb_get_letohs(tvb, offset+3);
 
   proto_tree_add_item(tree, &hfi_msg_tx_version, tvb, offset, 2, ENC_LITTLE_ENDIAN);
   offset += 2;
@@ -2110,6 +2133,23 @@ dissect_dash_msg_tx_common(tvbuff_t *tvb, guint32 offset, packet_info *pinfo, pr
 
   proto_tree_add_item(tree, &hfi_msg_tx_lock_time, tvb, offset, 4, ENC_LITTLE_ENDIAN);
   offset += 4;
+
+  /* Special Tx payload will be next (if present) */
+  len_remaining = tvb_reported_length_remaining(tvb, offset);
+  //proto_tree_add_debug_text(tree, "Debug - length remaining: %0d", len_remaining);
+
+  if (len_remaining > 0 && (tx_version >= 2) && (tx_type > 0))
+  {
+    /* Extra Payload Size */
+    get_varint(tvb, offset, &count_length, &extra_payload_size);
+    add_varint_item(tree, tvb, offset, count_length, &hfi_msg_tx_extra_payload_size8, &hfi_msg_tx_extra_payload_size16,
+                    &hfi_msg_tx_extra_payload_size32, &hfi_msg_tx_extra_payload_size64);
+    offset += count_length;
+
+    /* Extra Payload (eventually dissect these too) */
+    proto_tree_add_item(tree, &hfi_msg_tx_extra_payload, tvb, offset, (guint)extra_payload_size, ENC_NA);
+    offset += extra_payload_size;
+  }
 
   /* needed for block nesting */
   proto_item_set_len(rti, offset);
@@ -3483,6 +3523,11 @@ proto_register_dash(void)
     &hfi_msg_tx_out_script,
 
     &hfi_msg_tx_lock_time,
+    &hfi_msg_tx_extra_payload_size8,
+    &hfi_msg_tx_extra_payload_size16,
+    &hfi_msg_tx_extra_payload_size32,
+    &hfi_msg_tx_extra_payload_size64,
+    &hfi_msg_tx_extra_payload,
 
     /* block message */
     &hfi_msg_block_transactions8,
