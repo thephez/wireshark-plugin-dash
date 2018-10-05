@@ -2008,8 +2008,8 @@ dissect_dash_msg_tx_common(tvbuff_t *tvb, guint32 offset, packet_info *pinfo, pr
   tree = proto_item_add_subtree(rti, ett_dash_msg);
 
   /* Get 2 byte version and type values */
-  tx_version = tvb_get_letohs(tvb, offset+1);
-  tx_type = tvb_get_letohs(tvb, offset+3);
+  tx_version = tvb_get_letohs(tvb, offset+0);
+  tx_type = tvb_get_letohs(tvb, offset+2);
 
   proto_tree_add_item(tree, &hfi_msg_tx_version, tvb, offset, 2, ENC_LITTLE_ENDIAN);
   offset += 2;
