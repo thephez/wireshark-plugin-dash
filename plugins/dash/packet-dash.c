@@ -81,6 +81,17 @@ static const value_string inv_types[] =
   { 17, "MSG_GOVERNANCE_OBJECT" },
   { 18, "MSG_GOVERNANCE_OBJECT_VOTE" },
   { 19, "MSG_MASTERNODE_VERIFY" },
+  // jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+  { 20, "MSG_CMPCT_BLOCK" },
+  { 21, "MSG_QUORUM_FINAL_COMMITMENT" },
+  { 23, "MSG_QUORUM_CONTRIB" },
+  { 24, "MSG_QUORUM_COMPLAINT" },
+  { 25, "MSG_QUORUM_JUSTIFICATION" },
+  { 26, "MSG_QUORUM_PREMATURE_COMMITMENT" },
+  { 28, "MSG_QUORUM_RECOVERED_SIG" },
+  { 29, "MSG_CLSIG" },
+  { 30, "MSG_ISLOCK" },
+  // jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   { 0, NULL }
 };
 
@@ -229,13 +240,22 @@ static const value_string spork_description[] =
   { 10001, "SPORK_2_INSTANTSEND_ENABLED" },
   { 10002, "SPORK_3_INSTANTSEND_BLOCK_FILTERING" },
   { 10004, "SPORK_5_INSTANTSEND_MAX_VALUE" },
-  { 10007, "SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT" },
+// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+  { 10005, "SPORK_6_NEW_SIGS" },
+//{ 10007, "SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT" },
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   { 10008, "SPORK_9_SUPERBLOCKS_ENABLED" },
-  { 10009, "SPORK_10_MASTERNODE_PAY_UPDATED_NODES" },
-  { 10011, "SPORK_12_RECONSIDER_BLOCKS" },
-  { 10012, "SPORK_13_OLD_SUPERBLOCK_FLAG" },
-  { 10013, "SPORK_14_REQUIRE_SENTINEL_FLAG" },
-
+// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>  
+//{ 10009, "SPORK_10_MASTERNODE_PAY_UPDATED_NODES" },
+//{ 10011, "SPORK_12_RECONSIDER_BLOCKS" },
+//{ 10012, "SPORK_13_OLD_SUPERBLOCK_FLAG" },
+//{ 10013, "SPORK_14_REQUIRE_SENTINEL_FLAG" },
+  { 10014, "SPORK_15_DETERMINISTIC_MNS_ENABLED" },
+  { 10015, "SPORK_16_INSTANTSEND_AUTOLOCKS" },
+  { 10016, "SPORK_17_QUORUM_DKG_ENABLED" },
+  { 10018, "SPORK_19_CHAINLOCKS_ENABLED" },
+  { 10019, "SPORK_20_INSTANTSEND_LLMQ_BASED" },
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 };
 
 static const value_string masternode_sync_item_id[] =
@@ -245,8 +265,10 @@ static const value_string masternode_sync_item_id[] =
   { -1, "MASTERNODE_SYNC_FAILED" },
   { 0, "MASTERNODE_SYNC_INITIAL" },
   { 1, "MASTERNODE_SYNC_SPORKS" },
-  { 2, "MASTERNODE_SYNC_LIST" },
-  { 3, "MASTERNODE_SYNC_MNW" },
+// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>  
+//{ 2, "MASTERNODE_SYNC_LIST" },
+//{ 3, "MASTERNODE_SYNC_MNW" },
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   { 4, "MASTERNODE_SYNC_GOVERNANCE" },
   { 10, "MASTERNODE_SYNC_GOVOBJ" },
   { 11, "MASTERNODE_SYNC_GOVOBJ_VOTE" },
@@ -255,7 +277,6 @@ static const value_string masternode_sync_item_id[] =
   // Not sure if these belong here
   { 6, "MASTERNODE_SYNC_TICK_SECONDS???" },
   { 30, "MASTERNODE_SYNC_TIMEOUT_SECONDS???" },
-
 };
 
 static const value_string governance_object[] =
@@ -288,13 +309,27 @@ static const value_string special_tx_type[] =
   { 3, "Provider Update - Registrar (ProUpRegTx)" },
   { 4, "Provider Update - Key Revocation (ProUpRevTx)" },
   { 5, "Coinbase (CbTx)" },
-  { 6, "RESERVED" },
+// jhhong add 19.07.10 >>>>>>>>>>>>>>>>>>>>>>>>>>> 
+//{ 6, "RESERVED" },
+  { 6, "Quorum Commitment (QcTx)" },
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   { 7, "RESERVED" },
   { 8, "Subscription - Registration (SubTxRegister)" },
   { 9, "Subscription - Topup (SubTxTopup)" },
   { 10, "Subscription - Key Change (SubTxResetKey)" },
   { 11, "Subscription - Account Close (SubTxCloseAccount)" },
 };
+
+// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>  
+static const value_string llmq_type[] =
+{
+  // Defined in src/consensus/params.h
+  { 1,   "LLMQ_50_60" },
+  { 2,   "LLMQ_400_60" },
+  { 3,   "LLMQ_400_85" },
+  { 100, "LLMQ_5_60" },
+};
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /*
  * Minimum dash identification header.
@@ -377,6 +412,10 @@ static header_field_info hfi_msg_version_start_height DASH_HFI_INIT =
 
 static header_field_info hfi_msg_version_relay DASH_HFI_INIT =
   { "Relay flag", "dash.version.relay", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+static header_field_info hfi_msg_version_mn_challenge DASH_HFI_INIT =
+  { "Masternode Auth Challenge", "dash.version.mnchallenge", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* addr message */
 static header_field_info hfi_msg_addr_count8 DASH_HFI_INIT =
@@ -622,6 +661,154 @@ static header_field_info hfi_msg_tx_extra_payload_size64 DASH_HFI_INIT =
 static header_field_info hfi_msg_tx_extra_payload DASH_HFI_INIT =
   { "Extra Payload", "dash.tx.extra_payload", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
+// jhhong add 19.07.10 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+/* tx.proregtx */
+static header_field_info hfi_msg_tx_extra_proregtx DASH_HFI_INIT =
+  { "ProRegTx Payload", "dash.tx.proregtx", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_version DASH_HFI_INIT =
+  { "Version", "dash.tx.proregtx.version", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_type DASH_HFI_INIT =
+  { "Type", "dash.tx.proregtx.type", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_mode DASH_HFI_INIT =
+  { "Mode", "dash.tx.proregtx.mode", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_collateral_outpoint DASH_HFI_INIT =
+  { "Collateral Outpoints", "dash.tx.proregtx.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_ipaddr DASH_HFI_INIT =
+  { "IP address", "dash.tx.proregtx.ipaddr", FT_IPv6, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_port DASH_HFI_INIT =
+  { "Port", "dash.tx.proregtx.port", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_keyid_owner DASH_HFI_INIT =
+  { "Owner pubkey hash (ECDSA)", "dash.tx.proregtx.keyidowner", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_opr_pubkey DASH_HFI_INIT =
+  { "Operator public key (BLS)", "dash.tx.proregtx.pubkeyoperator", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_keyid_voting DASH_HFI_INIT =
+  { "Voting pubkey hash (ECDSA)", "dash.tx.proregtx.keyidvoting", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_opr_reward DASH_HFI_INIT =
+  { "Operator reward", "dash.tx.proregtx.operatorreward", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_script DASH_HFI_INIT =
+  { "Payout script", "dash.tx.proregtx.script", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_script_size8 DASH_HFI_INIT =
+  { "Size", "dash.tx.proregtx.script.size", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_script_size16 DASH_HFI_INIT =
+  { "Size", "dash.tx.proregtx.script.size", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_script_size32 DASH_HFI_INIT =
+  { "Size", "dash.tx.proregtx.script.size", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_script_size64 DASH_HFI_INIT =
+  { "Size", "dash.tx.proregtx.script.size", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_script_data DASH_HFI_INIT =
+  { "Data", "dash.tx.proregtx.script.data", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_inputshash DASH_HFI_INIT =
+  { "Inputs hash", "dash.tx.proregtx.inputshash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_payloadsig_size8 DASH_HFI_INIT =
+  { "Signature Size", "dash.tx.proregtx.payloadsigsize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_payloadsig_size16 DASH_HFI_INIT =
+  { "Signature Size", "dash.tx.proregtx.payloadsigsize", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_payloadsig_size32 DASH_HFI_INIT =
+  { "Signature Size", "dash.tx.proregtx.payloadsigsize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_payloadsig_size64 DASH_HFI_INIT =
+  { "Signature Size", "dash.tx.proregtx.payloadsigsize", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proregtx_payloadsig DASH_HFI_INIT =
+  { "Signature", "dash.tx.proregtx.payloadsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* tx.proupservtx */
+static header_field_info hfi_msg_tx_extra_proupservtx DASH_HFI_INIT =
+  { "ProUpServTx Payload", "dash.tx.proupservtx", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupservtx_version DASH_HFI_INIT =
+  { "Version", "dash.tx.proupservtx.version", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupservtx_protxhash DASH_HFI_INIT =
+  { "ProRegTx Hash", "dash.tx.proupservtx.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };  
+static header_field_info hfi_msg_tx_extra_proupservtx_ipaddr DASH_HFI_INIT =
+  { "IP address", "dash.tx.proupservtx.ipaddr", FT_IPv6, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupservtx_port DASH_HFI_INIT =
+  { "Port", "dash.tx.proupservtx.port", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupservtx_script_size8 DASH_HFI_INIT =
+  { "Operator Payout script size", "dash.tx.proupservtx.scriptsize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupservtx_script_size16 DASH_HFI_INIT =
+  { "Operator Payout script size", "dash.tx.proupservtx.scriptsize", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupservtx_script_size32 DASH_HFI_INIT =
+  { "Operator Payout script size", "dash.tx.proupservtx.scriptsize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupservtx_script_size64 DASH_HFI_INIT =
+  { "Operator Payout script size", "dash.tx.proupservtx.scriptsize", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupservtx_script DASH_HFI_INIT =
+  { "Operator Payout script", "dash.tx.proupservtx.script", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupservtx_inputshash DASH_HFI_INIT =
+  { "Inputs hash", "dash.tx.proupservtx.inputshash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupservtx_payloadsig DASH_HFI_INIT =
+  { "Bls Signature", "dash.tx.proupservtx.payloadsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* tx.proupregtx */
+static header_field_info hfi_msg_tx_extra_proupregtx DASH_HFI_INIT =
+  { "ProUpRegTx Payload", "dash.tx.proupregtx", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupregtx_version DASH_HFI_INIT =
+  { "Version", "dash.tx.proupregtx.version", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupregtx_protxhash DASH_HFI_INIT =
+  { "ProRegTx Hash", "dash.tx.proupregtx.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupregtx_mode DASH_HFI_INIT =
+  { "Mode", "dash.tx.proupregtx.mode", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupregtx_opr_pubkey DASH_HFI_INIT =
+  { "Operator pubkey (BLS)", "dash.tx.proupregtx.pubkeyoperator", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupregtx_keyid_voting DASH_HFI_INIT =
+  { "Voting pubkey hash (ECDSA)", "dash.tx.proupregtx.keyidvoting", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupregtx_script DASH_HFI_INIT =
+  { "Payout script", "dash.tx.proupregtx.script", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupregtx_script_size8 DASH_HFI_INIT =
+  { "Size", "dash.tx.proupregtx.script.size", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupregtx_script_size16 DASH_HFI_INIT =
+  { "Size", "dash.tx.proupregtx.script.size", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupregtx_script_size32 DASH_HFI_INIT =
+  { "Size", "dash.tx.proupregtx.script.size", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupregtx_script_size64 DASH_HFI_INIT =
+  { "Size", "dash.tx.proupregtx.script.size", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupregtx_script_data DASH_HFI_INIT =
+  { "Data", "dash.tx.proupregtx.script.data", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupregtx_inputshash DASH_HFI_INIT =
+  { "Inputs hash", "dash.tx.proupregtx.inputshash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupregtx_payloadsig_size8 DASH_HFI_INIT =
+  { "Signature Size", "dash.tx.proupregtx.payloadsigsize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupregtx_payloadsig_size16 DASH_HFI_INIT =
+  { "Signature Size", "dash.tx.proupregtx.payloadsigsize", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupregtx_payloadsig_size32 DASH_HFI_INIT =
+  { "Signature Size", "dash.tx.proupregtx.payloadsigsize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupregtx_payloadsig_size64 DASH_HFI_INIT =
+  { "Signature Size", "dash.tx.proupregtx.payloadsigsize", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_proupregtx_payloadsig DASH_HFI_INIT =
+  { "Signature", "dash.tx.proupregtx.payloadsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* tx.prouprevtx */
+static header_field_info hfi_msg_tx_extra_prouprevtx DASH_HFI_INIT =
+  { "ProUpRevTx Payload", "dash.tx.prouprevtx", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_prouprevtx_version DASH_HFI_INIT =
+  { "Version", "dash.tx.prouprevtx.version", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_prouprevtx_protxhash DASH_HFI_INIT =
+  { "ProRegTx Hash", "dash.tx.prouprevtx.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_prouprevtx_reason DASH_HFI_INIT =
+  { "Version", "dash.tx.prouprevtx.reason", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_prouprevtx_inputshash DASH_HFI_INIT =
+  { "ProRegTx Hash", "dash.tx.prouprevtx.inputshash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_prouprevtx_payloadsig DASH_HFI_INIT =
+  { "Signature", "dash.tx.prouprevtx.payloadsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* tx.cbtx */
+static header_field_info hfi_msg_tx_extra_cbtx DASH_HFI_INIT =
+  { "CbTx Payload", "dash.tx.cbtx", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_cbtx_version DASH_HFI_INIT =
+  { "Version", "dash.tx.cbtx.version", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_cbtx_height DASH_HFI_INIT =
+  { "Block Height", "dash.tx.cbtx.height", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_cbtx_merkle_mn DASH_HFI_INIT =
+  { "MN List merkle root", "dash.tx.cbtx.merklemn", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_cbtx_merkle_quorum DASH_HFI_INIT =
+  { "Active LLMQ merkle root", "dash.tx.cbtx.merklequorum", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* tx.qctx */
+static header_field_info hfi_msg_tx_extra_qctx DASH_HFI_INIT =
+  { "QcTx Payload", "dash.tx.qctx", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_qctx_version DASH_HFI_INIT =
+  { "Version", "dash.tx.qctx.version", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_tx_extra_qctx_height DASH_HFI_INIT =
+  { "Block Height", "dash.tx.qctx.height", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 /* block message */
 static header_field_info hfi_msg_block_transactions8 DASH_HFI_INIT =
   { "Number of transactions", "dash.block.num_transactions", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -821,20 +1008,103 @@ static header_field_info hfi_address_port DASH_HFI_INIT =
 
 /* blocktxn message */
 static header_field_info hfi_dash_msg_blocktxn DASH_HFI_INIT =
-  { "Block Transaction message", "dash.blocktxn", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+  { "blocktxn message", "dash.blocktxn", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+static header_field_info hfi_msg_blocktxn_hash DASH_HFI_INIT =
+  { "Block Hash", "dash.blocktxn.blockhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_blocktxn_tx_count8 DASH_HFI_INIT =
+  { "Transactions Provided", "dash.blocktxn.txcount", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_blocktxn_tx_count16 DASH_HFI_INIT =
+  { "Transactions Provided", "dash.blocktxn.txcount", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_blocktxn_tx_count32 DASH_HFI_INIT =
+  { "Transactions Provided", "dash.blocktxn.txcount", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_blocktxn_tx_count64 DASH_HFI_INIT =
+  { "Transactions Provided", "dash.blocktxn.txcount64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* cmpctblock message */
 static header_field_info hfi_dash_msg_cmpctblock DASH_HFI_INIT =
-  { "Compact Block message", "dash.cmpctblock", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+  { "cmpctblock message", "dash.cmpctblock", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+static header_field_info hfi_msg_cmpctblock_version DASH_HFI_INIT =
+  { "Block version", "dash.cmpctblock.version", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_prev_block DASH_HFI_INIT =
+  { "Previous block", "dash.cmpctblock.prev_block", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_merkle_root DASH_HFI_INIT =
+  { "Merkle root", "dash.cmpctblock.merkle_root", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_time DASH_HFI_INIT =
+  { "Block timestamp", "dash.cmpctblock.timestamp", FT_ABSOLUTE_TIME, ABSOLUTE_TIME_LOCAL, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_bits DASH_HFI_INIT =
+  { "Bits", "dash.cmpctblock.bits", FT_UINT32, BASE_HEX, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_nonce DASH_HFI_INIT =
+  { "Nonce", "dash.cmpctblock.nonce", FT_UINT32, BASE_HEX, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_shortids_nonce DASH_HFI_INIT =
+  { "Short IDs Nonce", "dash.cmpctblock.shortidsnonce", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_shortids_count8 DASH_HFI_INIT =
+  { "Short IDs Length", "dash.cmpctblock.shortidscount", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_shortids_count16 DASH_HFI_INIT =
+  { "Short IDs Length", "dash.cmpctblock.shortidscount", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_shortids_count32 DASH_HFI_INIT =
+  { "Short IDs Length", "dash.cmpctblock.shortidscount", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_shortids_count64 DASH_HFI_INIT =
+  { "Short IDs Length", "dash.cmpctblock.shortidscount64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_shortids DASH_HFI_INIT =
+  { "Short IDs", "dash.cmpctblock.shortids", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_shortids_id DASH_HFI_INIT =
+  { "Short IDs", "dash.cmpctblock.shortids.id", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_prefilledtxn_count8 DASH_HFI_INIT =
+  { "Prefilled Transaction Length", "dash.cmpctblock.prefilledtxncount", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_prefilledtxn_count16 DASH_HFI_INIT =
+  { "Prefilled Transaction Length", "dash.cmpctblock.prefilledtxncount", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_prefilledtxn_count32 DASH_HFI_INIT =
+  { "Prefilled Transaction Length", "dash.cmpctblock.prefilledtxncount", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_prefilledtxn_count64 DASH_HFI_INIT =
+  { "Prefilled Transaction Length", "dash.cmpctblock.prefilledtxncount64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_prefilledtx DASH_HFI_INIT =
+  { "Prefilled Transaction", "dash.cmpctblock.prefilledtx", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_prefilledtx_index8 DASH_HFI_INIT =
+  { "Prefilled Transaction Index", "dash.cmpctblock.prefilledtx.index", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_prefilledtx_index16 DASH_HFI_INIT =
+  { "Prefilled Transaction Index", "dash.cmpctblock.prefilledtx.index", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_prefilledtx_index32 DASH_HFI_INIT =
+  { "Prefilled Transaction Index", "dash.cmpctblock.prefilledtx.index", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_cmpctblock_prefilledtx_index64 DASH_HFI_INIT =
+  { "Prefilled Transaction Index", "dash.cmpctblock.prefilledtx.index64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* getblocktxn message */
 static header_field_info hfi_dash_msg_getblocktxn DASH_HFI_INIT =
-  { "Get Block Transaction message", "dash.getblocktxn", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+  { "getblocktxn message", "dash.getblocktxn", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+static header_field_info hfi_msg_getblocktxn_hash DASH_HFI_INIT =
+  { "Block Hash", "dash.getblocktxn.blockhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_getblocktxn_tx_count8 DASH_HFI_INIT =
+  { "Index Length", "dash.getblocktxn.txcount", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_getblocktxn_tx_count16 DASH_HFI_INIT =
+  { "Index Length", "dash.getblocktxn.txcount", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_getblocktxn_tx_count32 DASH_HFI_INIT =
+  { "Index Length", "dash.getblocktxn.txcount", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_getblocktxn_tx_count64 DASH_HFI_INIT =
+  { "Index Length", "dash.getblocktxn.txcount64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_getblocktxn_tx_index8 DASH_HFI_INIT =
+  { "Index", "dash.getblocktxn.txindex", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_getblocktxn_tx_index16 DASH_HFI_INIT =
+  { "Index", "dash.getblocktxn.txindex", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_getblocktxn_tx_index32 DASH_HFI_INIT =
+  { "Index", "dash.getblocktxn.txindex", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_getblocktxn_tx_index64 DASH_HFI_INIT =
+  { "Index", "dash.getblocktxn.txindex64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* sendcmpct message */
 static header_field_info hfi_dash_msg_sendcmpct DASH_HFI_INIT =
-  { "Send Compact block message", "dash.sendcmpct", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
-
+  { "sendcmpct message", "dash.sendcmpct", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+static header_field_info hfi_msg_sendcmpct_announce DASH_HFI_INIT =
+  { "Block announce type", "dash.sendcmpct.announce", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_sendcmpct_version DASH_HFI_INIT =
+  { "Compact block version", "dash.sendcmpct.version", FT_UINT64, BASE_HEX, NULL, 0x0, NULL, HFILL };
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* variable string */
 static header_field_info hfi_string_value DASH_HFI_INIT =
@@ -1129,7 +1399,13 @@ static header_field_info hfi_msg_txlvote_outpoint DASH_HFI_INIT =
 
 static header_field_info hfi_msg_txlvote_outpoint_masternode DASH_HFI_INIT =
   { "Masternode output", "dash.txlvote.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, "The utxo of the masternode which is signing the vote", HFILL };
+// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+static header_field_info hfi_msg_txlvote_quorumModHash DASH_HFI_INIT =
+  { "Quorum Modifier hash", "dash.txlvote.quorumhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
+static header_field_info hfi_msg_txlvote_proTxHash DASH_HFI_INIT =
+  { "Masternode ProRegTx hash", "dash.txlvote.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 static header_field_info hfi_msg_txlvote_vchsig DASH_HFI_INIT =
   { "Masternode Signature", "dash.txlvote.vchsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
@@ -1256,6 +1532,354 @@ static header_field_info hfi_dash_msg_mnget DASH_HFI_INIT =
 // Removed in protocol version 70210
 //static header_field_info hfi_dash_msg_mnget_count32 DASH_HFI_INIT =
 //  { "Count", "dash.mnget.count", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+/* getmnlistd message: */
+static header_field_info hfi_dash_msg_getmnlistd DASH_HFI_INIT = 
+  { "getmnlistd message", "dash.getmnlistd", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_getmnlistd_baseblockhash DASH_HFI_INIT = 
+  { "Base block hash", "dash.getmnlistd.baseblockhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_getmnlistd_blockhash DASH_HFI_INIT = 
+  { "Block hash", "dash.getmnlistd.blockhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* mnlistdiff message: */  
+static header_field_info hfi_dash_msg_mnlistdiff DASH_HFI_INIT = 
+  { "mnlistdiff message", "dash.mnlistdiff", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* senddsq message: */
+static header_field_info hfi_dash_msg_senddsq DASH_HFI_INIT = 
+  { "senddsq message", "dash.senddsq", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_senddsq_enable DASH_HFI_INIT =
+  { "PrivateSend participation", "dash.senddsq.enable", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+  
+/* clsig message: */
+static header_field_info hfi_dash_msg_clsig DASH_HFI_INIT = 
+  { "clsig message", "dash.clsig", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_clsig_height DASH_HFI_INIT =
+  { "Block Height", "dash.clsig.start_height", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_clsig_blockhash DASH_HFI_INIT = 
+  { "Block Hash", "dash.clsig.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_clsig_sig DASH_HFI_INIT = 
+  { "LLMQ BLS Signature", "dash.clsig.blssignature", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* islock message: */
+static header_field_info hfi_dash_msg_islock DASH_HFI_INIT = 
+  { "islock message", "dash.islock", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_islock_input_count8 DASH_HFI_INIT =
+  { "Number of inputs", "dash.islock.inputnum", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_islock_input_count16 DASH_HFI_INIT =
+  { "Number of inputs", "dash.islock.inputnum", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_islock_input_count32 DASH_HFI_INIT =
+  { "Number of inputs", "dash.islock.inputnum", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_islock_input_count64 DASH_HFI_INIT =
+  { "Number of inputs", "dash.islock.inputnum64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_islock_inputs DASH_HFI_INIT =
+  { "Inputs", "dash.islock.inputs", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_islock_txid DASH_HFI_INIT = 
+  { "TXID", "dash.islock.txid", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_islock_sig DASH_HFI_INIT = 
+  { "LLMQ BLS Signature", "dash.islock.blssignature", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* mnauth message: */
+static header_field_info hfi_dash_msg_mnauth DASH_HFI_INIT = 
+  { "mnauth message", "dash.mnauth", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_mnauth_proregtx DASH_HFI_INIT = 
+  { "ProRegTx Hash", "dash.mnauth.proregtx", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_mnauth_blssignature DASH_HFI_INIT = 
+  { "Masternode BLS Signature", "dash.mnauth.blssignature", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* qcontrib message: */
+static header_field_info hfi_dash_msg_qcontrib DASH_HFI_INIT = 
+  { "qcontrib message", "dash.qcontrib", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_llmq_type DASH_HFI_INIT =
+  { "LLMQ Type", "dash.qcontrib.llmqtype", FT_UINT8, BASE_DEC, VALS(llmq_type), 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_quorum_hash DASH_HFI_INIT = 
+  { "Quorum Hash", "dash.qcontrib.quorumhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_protx_hash DASH_HFI_INIT = 
+  { "ProRegTx Hash", "dash.qcontrib.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_vvec_size8 DASH_HFI_INIT =
+  { "Vector Size", "dash.qcontrib.vvecsize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_vvec_size16 DASH_HFI_INIT =
+  { "Vector Size", "dash.qcontrib.vvecsize", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_vvec_size32 DASH_HFI_INIT =
+  { "Vector Size", "dash.qcontrib.vvecsize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_vvec_size64 DASH_HFI_INIT =
+  { "Vector Size", "dash.qcontrib.vvecsize64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_vvec DASH_HFI_INIT = 
+  { "Verification Vector", "dash.qcontrib.vvec", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_vvec_key DASH_HFI_INIT = 
+  { "Pubkey", "dash.qcontrib.vvec.key", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_ephemeral_pubkey DASH_HFI_INIT = 
+  { "Ephemeral BLS Public Key", "dash.qcontrib.ephemeralpubkey", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_iv DASH_HFI_INIT = 
+  { "IV Seed", "dash.qcontrib.iv", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_sk_count8 DASH_HFI_INIT =
+  { "Contribution count", "dash.qcontrib.skcount", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_sk_count16 DASH_HFI_INIT =
+  { "Contribution count", "dash.qcontrib.skcount", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_sk_count32 DASH_HFI_INIT =
+  { "Contribution count", "dash.qcontrib.skcount", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_sk_count64 DASH_HFI_INIT =
+  { "Contribution count", "dash.qcontrib.skcount64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_sk_contrib DASH_HFI_INIT =
+  { "Contributions", "dash.qcontrib.skcontrib", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_sk_contrib_size DASH_HFI_INIT =
+  { "Contribution Size", "dash.qcontrib.skcontrib.size", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_sk_contrib_key DASH_HFI_INIT =
+  { "Encrypted Secret Key contribution", "dash.qcontrib.skcontrib.key", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcontrib_sig DASH_HFI_INIT =
+  { "BLS signature (Operator Key)", "dash.qcontrib.sig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* qcomplaint message */
+static header_field_info hfi_dash_msg_qcomplaint DASH_HFI_INIT = 
+  { "qcomplaint message", "dash.qcomplaint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcomplaint_llmq_type DASH_HFI_INIT =
+  { "LLMQ Type", "dash.qcomplaint.llmqtype", FT_UINT8, BASE_DEC, VALS(llmq_type), 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcomplaint_quorum_hash DASH_HFI_INIT = 
+  { "Quorum Hash", "dash.qcomplaint.quorumhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcomplaint_protx_hash DASH_HFI_INIT = 
+  { "ProRegTx Hash", "dash.qcomplaint.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcomplaint_badbit_size8 DASH_HFI_INIT =
+  { "Bad member bitvector size", "dash.qcomplaint.badbitsize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcomplaint_badbit_size16 DASH_HFI_INIT =
+  { "Bad member bitvector size", "dash.qcomplaint.badbitsize", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcomplaint_badbit_size32 DASH_HFI_INIT =
+  { "Bad member bitvector size", "dash.qcomplaint.badbitsize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcomplaint_badbit_size64 DASH_HFI_INIT =
+  { "Bad member bitvector size", "dash.qcomplaint.badbitsize64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcomplaint_badmembers DASH_HFI_INIT = 
+  { "Bad members", "dash.qcomplaint.badmembers", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcomplaint_complaintbit_size8 DASH_HFI_INIT =
+  { "Complaints bitvector size", "dash.qcomplaint.complaintbitsize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcomplaint_complaintbit_size16 DASH_HFI_INIT =
+  { "Complaints bitvector size", "dash.qcomplaint.complaintbitsize", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcomplaint_complaintbit_size32 DASH_HFI_INIT =
+  { "Complaints bitvector size", "dash.qcomplaint.complaintbitsize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcomplaint_complaintbit_size64 DASH_HFI_INIT =
+  { "Complaints bitvector size", "dash.qcomplaint.complaintbitsize64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcomplaint_complaints DASH_HFI_INIT = 
+  { "Complaints", "dash.qcomplaint.complaints", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qcomplaint_sig DASH_HFI_INIT =
+  { "BLS signature (Operator Key)", "dash.qcomplaint.sig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* qjustify */
+static header_field_info hfi_dash_msg_qjustify DASH_HFI_INIT = 
+  { "qjustify message", "dash.qjustify", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qjustify_llmq_type DASH_HFI_INIT =
+  { "LLMQ Type", "dash.qjustify.llmqtype", FT_UINT8, BASE_DEC, VALS(llmq_type), 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qjustify_quorum_hash DASH_HFI_INIT = 
+  { "Quorum Hash", "dash.qjustify.quorumhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qjustify_protx_hash DASH_HFI_INIT = 
+  { "ProRegTx Hash", "dash.qjustify.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qjustify_sk_count8 DASH_HFI_INIT =
+  { "Contribution count", "dash.qjustify.skcount", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qjustify_sk_count16 DASH_HFI_INIT =
+  { "Contribution count", "dash.qjustify.skcount", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qjustify_sk_count32 DASH_HFI_INIT =
+  { "Contribution count", "dash.qjustify.skcount", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qjustify_sk_count64 DASH_HFI_INIT =
+  { "Contribution count", "dash.qjustify.skcount64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qjustify_sk_justify DASH_HFI_INIT =
+  { "Contributions", "dash.qjustify.skjustify", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qjustify_sk_justify_idx DASH_HFI_INIT =
+  { "Contribution Size", "dash.qjustify.skjustify.idx", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qjustify_sk_justify_key DASH_HFI_INIT =
+  { "Encrypted Secret Key contribution", "dash.qjustify.skjustify.key", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qjustify_sig DASH_HFI_INIT =
+  { "BLS signature (Operator Key)", "dash.qjustify.sig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* qpcommit */
+static header_field_info hfi_dash_msg_qpcommit DASH_HFI_INIT = 
+  { "qpcommit message", "dash.qpcommit", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qpcommit_llmq_type DASH_HFI_INIT =
+  { "LLMQ Type", "dash.qpcommit.llmqtype", FT_UINT8, BASE_DEC, VALS(llmq_type), 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qpcommit_quorum_hash DASH_HFI_INIT = 
+  { "Quorum Hash", "dash.qpcommit.quorumhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qpcommit_protx_hash DASH_HFI_INIT = 
+  { "ProRegTx Hash", "dash.qpcommit.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qpcommit_validmember_size8 DASH_HFI_INIT =
+  { "Valid member bitvector size", "dash.qpcommit.validmembersize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qpcommit_validmember_size16 DASH_HFI_INIT =
+  { "Valid member bitvector size", "dash.qpcommit.validmembersize", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qpcommit_validmember_size32 DASH_HFI_INIT =
+  { "Valid member bitvector size", "dash.qpcommit.validmembersize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qpcommit_validmember_size64 DASH_HFI_INIT =
+  { "Valid member bitvector size", "dash.qpcommit.validmembersize64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qpcommit_validmembers DASH_HFI_INIT = 
+  { "Valid members", "dash.qpcommit.validmembers", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qpcommit_quorum_pubkey DASH_HFI_INIT = 
+  { "Quorum BLS Public Key", "dash.qpcommit.quorumpubkey", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qpcommit_quorum_vvec_hash DASH_HFI_INIT = 
+  { "Quorum Verification Vector Hash", "dash.qpcommit.quorumvvechash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qpcommit_quorum_sig DASH_HFI_INIT =
+  { "BLS Threshold signature", "dash.qpcommit.quorumsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qpcommit_sig DASH_HFI_INIT =
+  { "BLS signature (Operator Key)", "dash.qpcommit.sig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* qfcommit */
+static header_field_info hfi_dash_msg_qfcommit DASH_HFI_INIT = 
+  { "qfcommit message", "dash.qfcommit", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qfcommit_version DASH_HFI_INIT =
+  { "Message Version", "dash.qfcommit.version", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qfcommit_llmq_type DASH_HFI_INIT =
+  { "LLMQ Type", "dash.qfcommit.llmqtype", FT_UINT8, BASE_DEC, VALS(llmq_type), 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qfcommit_quorum_hash DASH_HFI_INIT = 
+  { "Quorum Hash", "dash.qfcommit.quorumhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qfcommit_singers_size8 DASH_HFI_INIT =
+  { "Signer bitvector size", "dash.qfcommit.singersize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qfcommit_singers_size16 DASH_HFI_INIT =
+  { "Signer bitvector size", "dash.qfcommit.singersize", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qfcommit_singers_size32 DASH_HFI_INIT =
+  { "Signer bitvector size", "dash.qfcommit.singersize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qfcommit_singers_size64 DASH_HFI_INIT =
+  { "Signer bitvector size", "dash.qfcommit.singersize64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qfcommit_singers DASH_HFI_INIT = 
+  { "Signers", "dash.qfcommit.singers", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qfcommit_validmember_size8 DASH_HFI_INIT =
+  { "Valid member bitvector size", "dash.qfcommit.validmembersize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qfcommit_validmember_size16 DASH_HFI_INIT =
+  { "Valid member bitvector size", "dash.qfcommit.validmembersize", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qfcommit_validmember_size32 DASH_HFI_INIT =
+  { "Valid member bitvector size", "dash.qfcommit.validmembersize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qfcommit_validmember_size64 DASH_HFI_INIT =
+  { "Valid member bitvector size", "dash.qfcommit.validmembersize64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qfcommit_validmembers DASH_HFI_INIT = 
+  { "Valid members", "dash.qfcommit.validmembers", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qfcommit_quorum_pubkey DASH_HFI_INIT = 
+  { "Quorum BLS Public Key", "dash.qfcommit.quorumpubkey", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qfcommit_quorum_vvec_hash DASH_HFI_INIT = 
+  { "Quorum Verification Vector Hash", "dash.qfcommit.quorumvvechash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qfcommit_quorum_sig DASH_HFI_INIT =
+  { "Quorum BLS Recovered Threshold Sig", "dash.qfcommit.quorumsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qfcommit_sig DASH_HFI_INIT =
+  { "Quorum Aggregate BLS Sig", "dash.qfcommit.sig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* qbsigs */
+static header_field_info hfi_dash_msg_qbsigs DASH_HFI_INIT = 
+  { "qbsig message", "dash.qbsigs", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qbsigs_batchcount8 DASH_HFI_INIT =
+  { "Number of signature share batches", "dash.qbsigs.batchcount", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qbsigs_batchcount16 DASH_HFI_INIT =
+  { "Number of signature share batches", "dash.qbsigs.batchcount", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qbsigs_batchcount32 DASH_HFI_INIT =
+  { "Number of signature share batches", "dash.qbsigs.batchcount", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qbsigs_batchcount64 DASH_HFI_INIT =
+  { "Number of signature share batches", "dash.qbsigs.batchcount64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qbsigs_batched_sigshares DASH_HFI_INIT = 
+  { "Signature share batch", "dash.qbsigs.bsigshare", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qbsigs_batched_sigshares_sessionid DASH_HFI_INIT = 
+  { "Session ID", "dash.qbsigs.bsigshare.id", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qbsigs_batched_sigshares_sharecount8 DASH_HFI_INIT =
+  { "Share count", "dash.qbsigs.bsigshare.count", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qbsigs_batched_sigshares_sharecount16 DASH_HFI_INIT =
+  { "Share count", "dash.qbsigs.bsigshare.count", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qbsigs_batched_sigshares_sharecount32 DASH_HFI_INIT =
+  { "Share count", "dash.qbsigs.bsigshare.count", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qbsigs_batched_sigshares_sharecount64 DASH_HFI_INIT =
+  { "Share count", "dash.qbsigs.bsigshare.count64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qbsigs_batched_sigshares_sigshares DASH_HFI_INIT = 
+  { "qsigsesann message", "dash.qbsigs.bsigshare.sigshare", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qbsigs_batched_sigshares_sigshares_index DASH_HFI_INIT =
+  { "Index", "dash.qbsigs.bsigshare.sigshare.index", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qbsigs_batched_sigshares_sigshares_sig DASH_HFI_INIT =
+  { "BLS signature share", "dash.qbsigs.bsigshare.sigshare.sig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* qgetsigs */
+static header_field_info hfi_dash_msg_qgetsigs DASH_HFI_INIT = 
+  { "qgetsigs message", "dash.qgetsigs", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qgetsigs_count8 DASH_HFI_INIT =
+  { "Count", "dash.qgetsigs.count", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qgetsigs_count16 DASH_HFI_INIT =
+  { "Count", "dash.qgetsigs.count", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qgetsigs_count32 DASH_HFI_INIT =
+  { "Count", "dash.qgetsigs.count", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qgetsigs_count64 DASH_HFI_INIT =
+  { "Count", "dash.qgetsigs.count64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qgetsigs_sigs DASH_HFI_INIT = 
+  { "Signature share request", "dash.qgetsigs.sigs", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qgetsigs_sigs_sessionid DASH_HFI_INIT = 
+  { "Session ID", "dash.qgetsigs.sigs.id", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qgetsigs_sigs_invsize8 DASH_HFI_INIT =
+  { "Inventory size", "dash.qgetsigs.sigs.invsize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qgetsigs_sigs_invsize16 DASH_HFI_INIT =
+  { "Inventory size", "dash.qgetsigs.sigs.invsize", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qgetsigs_sigs_invsize32 DASH_HFI_INIT =
+  { "Inventory size", "dash.qgetsigs.sigs.invsize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qgetsigs_sigs_invsize64 DASH_HFI_INIT =
+  { "Inventory size", "dash.qgetsigs.sigs.invsize64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qgetsigs_sigs_inv DASH_HFI_INIT = 
+  { "Inventory", "dash.qgetsigs.sigs.inv", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* qsendrecsigs message: */
+static header_field_info hfi_dash_msg_qsendrecsigs DASH_HFI_INIT = 
+  { "qsendrecsigs message", "dash.qsendrecsigs", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsendrecsigs_enable DASH_HFI_INIT =
+  { "Request recovered signatures", "dash.qsendrecsigs.enable", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+
+/* qsigrec */
+static header_field_info hfi_dash_msg_qsigrec DASH_HFI_INIT = 
+  { "qsigrec message", "dash.qsigrec", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigrec_llmq_type DASH_HFI_INIT =
+  { "LLMQ type", "dash.qsigrec.llmqtype", FT_UINT8, BASE_DEC, VALS(llmq_type), 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigrec_quorumhash DASH_HFI_INIT = 
+  { "Quorum Hash", "dash.qsigrec.quorumhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigrec_id DASH_HFI_INIT = 
+  { "Signing Request ID", "dash.qsigrec.id", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigrec_msghash DASH_HFI_INIT = 
+  { "Message Hash", "dash.qsigrec.msghash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigrec_sig DASH_HFI_INIT =
+  { "LLMQ BLS Signature", "dash.qsigrec.sig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* qsigsesann */
+static header_field_info hfi_dash_msg_qsigsesann DASH_HFI_INIT = 
+  { "qsigsesann message", "dash.qsigsesann", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsesann_count8 DASH_HFI_INIT =
+  { "Count", "dash.qsigsesann.count", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsesann_count16 DASH_HFI_INIT =
+  { "Count", "dash.qsigsesann.count", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsesann_count32 DASH_HFI_INIT =
+  { "Count", "dash.qsigsesann.count", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsesann_count64 DASH_HFI_INIT =
+  { "Count", "dash.qsigsesann.count64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsesann_sesann DASH_HFI_INIT = 
+  { "Session Announcement", "dash.qsigsesann.sesann", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsesann_sesann_sessionid DASH_HFI_INIT = 
+  { "Session ID", "dash.qsigsesann.id", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsesann_sesann_llmq_type DASH_HFI_INIT =
+  { "LLMQ Type", "dash.qsigsesann.sesann.llmqtype", FT_UINT8, BASE_DEC, VALS(llmq_type), 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsesann_sesann_quorum_hash DASH_HFI_INIT = 
+  { "Quorum Hash", "dash.qsigsesann.sesann.quorumhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsesann_sesann_request_id DASH_HFI_INIT = 
+  { "Signaling Request ID", "dash.qsigsesann.sesann.requestid", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsesann_sesann_message_hash DASH_HFI_INIT = 
+  { "Message Hash", "dash.qsigsesann.sesann.messagehash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+
+/* qsigsinv */
+static header_field_info hfi_dash_msg_qsigsinv DASH_HFI_INIT = 
+  { "qsigsinv message", "dash.qsigsinv", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsinv_count8 DASH_HFI_INIT =
+  { "Count", "dash.qsigsinv.count", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsinv_count16 DASH_HFI_INIT =
+  { "Count", "dash.qsigsinv.count", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsinv_count32 DASH_HFI_INIT =
+  { "Count", "dash.qsigsinv.count", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsinv_count64 DASH_HFI_INIT =
+  { "Count", "dash.qsigsinv.count64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsinv_sigs DASH_HFI_INIT = 
+  { "Signature share request", "dash.qsigsinv.sigs", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsinv_sigs_sessionid DASH_HFI_INIT = 
+  { "Session ID", "dash.qsigsinv.sigs.id", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsinv_sigs_invsize8 DASH_HFI_INIT =
+  { "Inventory size", "dash.qsigsinv.sigs.invsize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsinv_sigs_invsize16 DASH_HFI_INIT =
+  { "Inventory size", "dash.qsigsinv.sigs.invsize", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsinv_sigs_invsize32 DASH_HFI_INIT =
+  { "Inventory size", "dash.qsigsinv.sigs.invsize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsinv_sigs_invsize64 DASH_HFI_INIT =
+  { "Inventory size", "dash.qsigsinv.sigs.invsize64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
+static header_field_info hfi_msg_qsigsinv_sigs_inv DASH_HFI_INIT = 
+  { "Inventory", "dash.qsigsinv.sigs.inv", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 static gint ett_dash = -1;
 static gint ett_dash_msg = -1;
@@ -1672,6 +2296,8 @@ create_string_tree(proto_tree *tree, header_field_info* hfi, tvbuff_t *tvb, guin
   return subtree;
 }
 
+// jhhong add 19.07.11 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+#if 0
 static proto_tree *
 create_string(proto_tree *tree, tvbuff_t *tvb, guint32* offset)
 {
@@ -1700,6 +2326,8 @@ create_string(proto_tree *tree, tvbuff_t *tvb, guint32* offset)
 
   return tree; //subtree;
 }
+#endif
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 static proto_tree *
 create_data_tree(proto_tree *tree, header_field_info* hfi, tvbuff_t *tvb, guint32* offset)
@@ -1731,6 +2359,8 @@ create_data_tree(proto_tree *tree, header_field_info* hfi, tvbuff_t *tvb, guint3
   return subtree;
 }
 
+// jhhong add 19.07.11 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+#if 0
 /**
  * Create a sub-tree and fill it with a Blockchain User Register
  */
@@ -1766,6 +2396,51 @@ create_subtxregister_tree(tvbuff_t *tvb, proto_item *ti, guint32 offset)
 
   return offset;
 }
+#endif
+/**
+ * Get quorum session id
+ */
+static int get_quorum_session_id(proto_tree *tree, tvbuff_t *tvb, gint offset, header_field_info *hfi) {
+  guint value;
+  guint count = 0;
+  do {
+    value = tvb_get_guint8(tvb, (offset + count++));
+    if(!(value & 0x80)) {
+      break;
+    }
+  } while(count < 4);
+  proto_tree_add_item(tree, hfi, tvb, offset, count, ENC_NA);
+  offset += count;
+  return offset;
+}
+
+/**
+ * Get quorum signature inventory
+ */
+static int get_quorum_sig_inventory(proto_tree *tree, tvbuff_t *tvb, gint offset, header_field_info *hfi, guint64 invSize) {
+  guint value;
+  guint invBytes = 0;
+
+  value = tvb_get_guint8(tvb, offset);
+  if(value == 0) { // fixed bitset
+    invBytes = (invSize + 7) / 8;
+    proto_tree_add_item(tree, hfi, tvb, offset, (invBytes + 1), ENC_NA);
+  } else if(value == 1) { // variable bitset
+    guint count = 1;
+    while((offset + count)<G_MAXINT) {
+      value = tvb_get_guint8(tvb, (offset + count++));
+      if(value == 0) {
+        proto_tree_add_item(tree, hfi, tvb, offset, count, ENC_NA);
+        offset += count;
+        break;
+      }
+    }
+  } else { // malformed
+    /* no actions */
+  }
+  return offset;
+}
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* Note: A number of the following message handlers include code of the form:
  *          ...
@@ -1844,6 +2519,13 @@ dissect_dash_msg_version(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree
     proto_tree_add_item(tree, &hfi_msg_version_relay, tvb, offset, 1, ENC_LITTLE_ENDIAN);
     offset += 1;
   }
+// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+  if (version >= 70214)
+  {
+    proto_tree_add_item(tree, &hfi_msg_version_mn_challenge, tvb, offset, 32, ENC_NA);
+    offset += 32;
+  }
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   return offset;
 }
@@ -2063,6 +2745,265 @@ dissect_dash_msg_getheaders(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
   return offset;
 }
 
+// jhhong add 19.07.10 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+// for special tx
+/**
+ * Handler for qfcommit messages
+ */
+
+static int
+dissect_dash_msg_qfcommit_common(tvbuff_t *tvb, guint32 offset, proto_tree *tree)
+{
+  proto_item *ti;
+  gint        length;
+  guint64     singerSize;
+  guint64     validmemberSize;
+  guint64     spaces;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_qfcommit, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_msg_qfcommit_version, tvb, offset, 2, ENC_LITTLE_ENDIAN);
+  offset += 2;
+
+  proto_tree_add_item(tree, &hfi_msg_qfcommit_llmq_type, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+  offset += 1;
+
+  proto_tree_add_item(tree, &hfi_msg_qfcommit_quorum_hash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  get_varint(tvb, offset, &length, &singerSize);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_qfcommit_singers_size8, &hfi_msg_qfcommit_singers_size16,
+                  &hfi_msg_qfcommit_singers_size32, &hfi_msg_qfcommit_singers_size64);
+  offset += length;
+
+  spaces = (singerSize + 7) / 8;
+  proto_tree_add_item(tree, &hfi_msg_qfcommit_singers, tvb, offset, spaces, ENC_NA);
+  offset += spaces;
+
+  get_varint(tvb, offset, &length, &validmemberSize);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_qfcommit_validmember_size8, &hfi_msg_qfcommit_validmember_size16,
+                  &hfi_msg_qfcommit_validmember_size32, &hfi_msg_qfcommit_validmember_size64);
+  offset += length;
+
+  spaces = (validmemberSize + 7) / 8;
+  proto_tree_add_item(tree, &hfi_msg_qfcommit_validmembers, tvb, offset, spaces, ENC_NA);
+  offset += spaces;
+
+  proto_tree_add_item(tree, &hfi_msg_qfcommit_quorum_pubkey, tvb, offset, 48, ENC_NA);
+  offset += 48;
+
+  proto_tree_add_item(tree, &hfi_msg_qfcommit_quorum_vvec_hash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  proto_tree_add_item(tree, &hfi_msg_qfcommit_quorum_sig, tvb, offset, 96, ENC_NA);
+  offset += 96;
+
+  proto_tree_add_item(tree, &hfi_msg_qfcommit_sig, tvb, offset, 96, ENC_NA);
+  offset += 96;
+  
+  return offset;
+}
+
+/**
+ * Handler for ProRegTx(special tx) messages
+ */
+
+static int
+dissect_dash_msg_tx_extra_ProRegTx(tvbuff_t *tvb, header_field_info* hfi, guint32 offset, proto_tree *tree) {
+  proto_item *subti;
+  proto_item *subti2;
+  proto_tree *subtree;
+  proto_tree *subtree2;
+  gint length;
+  guint64 count;
+
+  subti   = proto_tree_add_item(tree, hfi, tvb, offset, -1, ENC_NA);
+  subtree = proto_item_add_subtree(subti, ett_dash_msg);
+
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proregtx_version, tvb, offset, 2, ENC_LITTLE_ENDIAN);
+  offset += 2;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proregtx_type, tvb, offset, 2, ENC_LITTLE_ENDIAN);
+  offset += 2;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proregtx_mode, tvb, offset, 2, ENC_LITTLE_ENDIAN);
+  offset += 2;
+  offset = create_coutputpoint_tree(tvb, subti, &hfi_msg_tx_extra_proregtx_collateral_outpoint, offset);
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proregtx_ipaddr, tvb, offset, 16, ENC_NA);
+  offset += 16;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proregtx_port, tvb, offset, 2, ENC_BIG_ENDIAN);
+  offset += 2;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proregtx_keyid_owner, tvb, offset, 20, ENC_NA);
+  offset += 20;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proregtx_opr_pubkey, tvb, offset, 48, ENC_NA);
+  offset += 48;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proregtx_keyid_voting, tvb, offset, 20, ENC_NA);
+  offset += 20;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proregtx_opr_reward, tvb, offset, 2, ENC_LITTLE_ENDIAN);
+  offset += 2;
+  subti2   = proto_tree_add_item(subtree, &hfi_msg_tx_extra_proregtx_script, tvb, offset, -1, ENC_NA);
+  subtree2 = proto_item_add_subtree(subti2, ett_dash_msg);
+  get_varint(tvb, offset, &length, &count);
+  add_varint_item(subtree2, tvb, offset, length, &hfi_msg_tx_extra_proregtx_script_size8, &hfi_msg_tx_extra_proregtx_script_size16,
+                  &hfi_msg_tx_extra_proregtx_script_size32, &hfi_msg_tx_extra_proregtx_script_size64);
+  offset += length;
+  proto_tree_add_item(subtree2, &hfi_msg_tx_extra_proregtx_script_data, tvb, offset, count, ENC_NA);
+  offset += count;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proregtx_inputshash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+  get_varint(tvb, offset, &length, &count);
+  add_varint_item(subtree, tvb, offset, count, &hfi_msg_tx_extra_proregtx_payloadsig_size8, &hfi_msg_tx_extra_proregtx_payloadsig_size16,
+                  &hfi_msg_tx_extra_proregtx_payloadsig_size32, &hfi_msg_tx_extra_proregtx_payloadsig_size64);
+  offset += length;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proregtx_payloadsig, tvb, offset, count, ENC_NA);
+  offset += count;
+  
+  return offset;
+}
+
+/**
+ * Handler for ProUpServTx(special tx) messages
+ */
+
+static int
+dissect_dash_msg_tx_extra_ProUpServTx(tvbuff_t *tvb, header_field_info* hfi, guint32 offset, proto_tree *tree) {
+  proto_item *ti;
+  gint length;
+  guint64 count;
+
+  ti   = proto_tree_add_item(tree, hfi, tvb, offset, -1, ENC_NA);
+  proto_tree *subtree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupservtx_version, tvb, offset, 2, ENC_LITTLE_ENDIAN);
+  offset += 2;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupservtx_protxhash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupservtx_ipaddr, tvb, offset, 16, ENC_NA);
+  offset += 16;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupservtx_port, tvb, offset, 2, ENC_BIG_ENDIAN);
+  offset += 2;
+  get_varint(tvb, offset, &length, &count);
+  add_varint_item(subtree, tvb, offset, length, &hfi_msg_tx_extra_proupservtx_script_size8, &hfi_msg_tx_extra_proupservtx_script_size16,
+                  &hfi_msg_tx_extra_proupservtx_script_size32, &hfi_msg_tx_extra_proupservtx_script_size64);
+  offset += length;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupservtx_script, tvb, offset, count, ENC_NA);
+  offset += count;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupservtx_inputshash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupservtx_payloadsig, tvb, 96, count, ENC_NA);
+  offset += 96;
+  
+  return offset;
+}
+
+/**
+ * Handler for ProUpRegTx(special tx) messages
+ */
+
+static int
+dissect_dash_msg_tx_extra_ProUpRegTx(tvbuff_t *tvb, header_field_info* hfi, guint32 offset, proto_tree *tree) {
+  proto_item *subti;
+  proto_item *subti2;
+  proto_tree *subtree;
+  proto_tree *subtree2;
+  gint length;
+  guint64 count;
+
+  subti   = proto_tree_add_item(tree, hfi, tvb, offset, -1, ENC_NA);
+  subtree = proto_item_add_subtree(subti, ett_dash_msg);
+
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupregtx_version, tvb, offset, 2, ENC_LITTLE_ENDIAN);
+  offset += 2;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupregtx_protxhash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupregtx_mode, tvb, offset, 2, ENC_LITTLE_ENDIAN);
+  offset += 2;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupregtx_opr_pubkey, tvb, offset, 48, ENC_NA);
+  offset += 48;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupregtx_keyid_voting, tvb, offset, 20, ENC_NA);
+  offset += 20;
+  subti2   = proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupregtx_script, tvb, offset, -1, ENC_NA);
+  subtree2 = proto_item_add_subtree(subti2, ett_dash_msg);
+  get_varint(tvb, offset, &length, &count);
+  add_varint_item(subtree2, tvb, offset, length, &hfi_msg_tx_extra_proupregtx_script_size8, &hfi_msg_tx_extra_proupregtx_script_size16,
+                  &hfi_msg_tx_extra_proupregtx_script_size32, &hfi_msg_tx_extra_proupregtx_script_size64);
+  offset += length;
+  proto_tree_add_item(subtree2, &hfi_msg_tx_extra_proupregtx_script_data, tvb, offset, count, ENC_NA);
+  offset += count;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupregtx_inputshash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+  get_varint(tvb, offset, &length, &count);
+  add_varint_item(subtree, tvb, offset, length, &hfi_msg_tx_extra_proupregtx_payloadsig_size8, &hfi_msg_tx_extra_proupregtx_payloadsig_size16,
+                  &hfi_msg_tx_extra_proupregtx_payloadsig_size32, &hfi_msg_tx_extra_proupregtx_payloadsig_size64);
+  offset += length;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupregtx_payloadsig, tvb, offset, count, ENC_NA);
+  offset += count;
+  
+  return offset;
+}
+
+/**
+ * Handler for ProUpRevTx(special tx) messages
+ */
+
+static int
+dissect_dash_msg_tx_extra_ProUpRevTx(tvbuff_t *tvb, header_field_info* hfi, guint32 offset, proto_tree *tree) {
+  proto_item *ti = proto_tree_add_item(tree, hfi, tvb, offset, -1, ENC_NA);
+  proto_tree *subtree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_prouprevtx_version, tvb, offset, 2, ENC_LITTLE_ENDIAN);
+  offset += 2;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_prouprevtx_protxhash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_prouprevtx_reason, tvb, offset, 2, ENC_NA);
+  offset += 2;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_prouprevtx_inputshash, tvb, offset, 32, ENC_BIG_ENDIAN);
+  offset += 32;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_prouprevtx_payloadsig, tvb, offset, 96, ENC_NA);
+  offset += 96;
+  
+  return offset;
+}
+
+/**
+ * Handler for CbTx(special tx) messages
+ */
+
+static int
+dissect_dash_msg_tx_extra_CbTx(tvbuff_t *tvb, header_field_info* hfi, guint32 offset, proto_tree *tree) {
+  proto_item *ti = proto_tree_add_item(tree, hfi, tvb, offset, -1, ENC_NA);
+  proto_tree *subtree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_cbtx_version, tvb, offset, 2, ENC_LITTLE_ENDIAN);
+  offset += 2;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_cbtx_height, tvb, offset, 4, ENC_NA);
+  offset += 4;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_cbtx_merkle_mn, tvb, offset, 32, ENC_NA);
+  offset += 32;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_cbtx_merkle_quorum, tvb, offset, 32, ENC_BIG_ENDIAN);
+  offset += 32;
+  
+  return offset;
+}
+
+/**
+ * Handler for QcTx(special tx) messages
+ */
+
+static int
+dissect_dash_msg_tx_extra_QcTx(tvbuff_t *tvb, header_field_info* hfi, guint32 offset, proto_tree *tree) {
+  proto_item *ti = proto_tree_add_item(tree, hfi, tvb, offset, -1, ENC_NA);
+  proto_tree *subtree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_qctx_version, tvb, offset, 2, ENC_LITTLE_ENDIAN);
+  offset += 2;
+  proto_tree_add_item(subtree, &hfi_msg_tx_extra_qctx_height, tvb, offset, 4, ENC_NA);
+  offset += 4;
+  offset = dissect_dash_msg_qfcommit_common(tvb, offset, tree);
+  
+  return offset;
+}
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 /**
  * Handler for tx message body
  */
@@ -2081,7 +3022,7 @@ dissect_dash_msg_tx_common(tvbuff_t *tvb, guint32 offset, packet_info *pinfo, pr
   if (msgnum == 0) {
     rti  = proto_tree_add_item(tree, &hfi_dash_msg_tx, tvb, offset, -1, ENC_NA);
   } else {
-    rti  = proto_tree_add_none_format(tree, hfi_dash_msg_tx.id, tvb, offset, -1, "Tx message [ %4d ]", msgnum);
+    rti  = proto_tree_add_none_format(tree, &hfi_dash_msg_tx, tvb, offset, -1, "Tx message [ %4d ]", msgnum);
   }
   tree = proto_item_add_subtree(rti, ett_dash_msg);
 
@@ -2224,6 +3165,8 @@ dissect_dash_msg_tx_common(tvbuff_t *tvb, guint32 offset, packet_info *pinfo, pr
                     &hfi_msg_tx_extra_payload_size32, &hfi_msg_tx_extra_payload_size64);
     offset += count_length;
 
+// jhhong add 19.07.10 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+#if 0
     /* Extra Payload (eventually dissect these too) */
     proto_tree_add_item(tree, &hfi_msg_tx_extra_payload, tvb, offset, (guint)extra_payload_size, ENC_NA);
     //offset += extra_payload_size;
@@ -2233,9 +3176,34 @@ dissect_dash_msg_tx_common(tvbuff_t *tvb, guint32 offset, packet_info *pinfo, pr
       rti = proto_tree_add_item(tree, &hfi_dash_msg_subtx, tvb, offset, -1, ENC_NA);
       create_subtxregister_tree(tvb, rti, offset);
     }
-
     offset += extra_payload_size;
   }
+#else
+    switch(tx_type) {
+      case 1:
+      offset = dissect_dash_msg_tx_extra_ProRegTx(tvb, &hfi_msg_tx_extra_proregtx, offset, tree);
+      break;
+      case 2:
+      offset = dissect_dash_msg_tx_extra_ProUpServTx(tvb, &hfi_msg_tx_extra_proupservtx, offset, tree);
+      break;
+      case 3:
+      offset = dissect_dash_msg_tx_extra_ProUpRegTx(tvb, &hfi_msg_tx_extra_proupregtx, offset, tree);
+      break;
+      case 4:
+      offset = dissect_dash_msg_tx_extra_ProUpRevTx(tvb, &hfi_msg_tx_extra_prouprevtx, offset, tree);
+      break;
+      case 5:
+      offset = dissect_dash_msg_tx_extra_CbTx(tvb, &hfi_msg_tx_extra_cbtx, offset, tree);
+      break;
+      case 6:
+      offset = dissect_dash_msg_tx_extra_QcTx(tvb, &hfi_msg_tx_extra_qctx, offset, tree);
+      break;
+      default: /* malformed packet */
+      break;
+    }
+  }
+#endif
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   /* needed for block nesting */
   proto_item_set_len(rti, offset);
@@ -2550,6 +3518,8 @@ dissect_dash_msg_merkleblock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *
 static int
 dissect_dash_msg_blocktxn(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
 {
+// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+#if 0
   proto_item *ti;
   guint32     offset = 0;
 
@@ -2557,6 +3527,39 @@ dissect_dash_msg_blocktxn(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tre
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
   return tvb_captured_length(tvb);
+#endif
+  proto_item *ti;
+  gint        length;
+  guint64     count;
+  guint       msgnum;
+  guint32     offset = 0;
+
+  /*  blocktxn
+   *    [32] blockhash    Binary blob
+   *    [ ?] txn_count    var_int
+   *    [ ?] txns         tx[]      Block transactions, in format of "tx" command
+   */
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_blocktxn, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_msg_blocktxn_hash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  get_varint(tvb, offset, &length, &count);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_blocktxn_tx_count8, &hfi_msg_blocktxn_tx_count16,
+                  &hfi_msg_blocktxn_tx_count32, &hfi_msg_blocktxn_tx_count64);
+  offset += length;
+
+  msgnum = 0;
+  for (; count>0 && offset<G_MAXINT; count--)
+  {
+    msgnum += 1;
+    offset = dissect_dash_msg_tx_common(tvb, offset, pinfo, tree, msgnum);
+  }
+
+  return offset;
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 }
 
 /**
@@ -2566,6 +3569,8 @@ dissect_dash_msg_blocktxn(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tre
 static int
 dissect_dash_msg_cmpctblock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
 {
+// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+#if 0
   proto_item *ti;
   guint32     offset = 0;
 
@@ -2573,6 +3578,80 @@ dissect_dash_msg_cmpctblock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
   return tvb_captured_length(tvb);
+#endif
+  proto_item *ti;
+  gint        length;
+  guint64     count;
+  guint64     index;
+  guint       msgnum;
+  guint32     offset = 0;
+
+  /*  cmpctblock
+   *    [ 4] version              uint32_t
+   *    [32] prev_block           char[32]
+   *    [32] merkle_root          char[32]
+   *    [ 4] timestamp            uint32_t  A unix timestamp ... (Currently limited to dates before the year 2106!)
+   *    [ 4] bits                 uint32_t
+   *    [ 4] nonce                uint32_t
+   *    [ 8] short id's nonce     uint64_t
+   *    [ ?] short id's length    compactSize
+   *      [ ?] short ids            variable (6bytes intger[])
+   *    [ ?] prefilled txn len    compactSize
+   *      [ ?] prefilled tx index   var_int
+   *      [ ?] txns                 tx[]      Block transactions, in format of "tx" command
+   */
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_cmpctblock, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_msg_cmpctblock_version, tvb, offset,  4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+  proto_tree_add_item(tree, &hfi_msg_cmpctblock_prev_block, tvb, offset, 32, ENC_NA);
+  offset += 32;
+  proto_tree_add_item(tree, &hfi_msg_cmpctblock_merkle_root, tvb, offset, 32, ENC_NA);
+  offset += 32;
+  proto_tree_add_item(tree, &hfi_msg_cmpctblock_time, tvb, offset,  4, ENC_TIME_TIMESPEC|ENC_LITTLE_ENDIAN);
+  offset += 4;
+  proto_tree_add_item(tree, &hfi_msg_cmpctblock_bits, tvb, offset,  4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+  proto_tree_add_item(tree, &hfi_msg_cmpctblock_nonce, tvb, offset,  4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+  proto_tree_add_item(tree, &hfi_msg_cmpctblock_shortids_nonce, tvb, offset, 8, ENC_LITTLE_ENDIAN);
+  offset += 8;
+  
+  get_varint(tvb, offset, &length, &count);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_cmpctblock_shortids_count8, &hfi_msg_cmpctblock_shortids_count16,
+                  &hfi_msg_cmpctblock_shortids_count32, &hfi_msg_cmpctblock_shortids_count64);
+  offset += length;
+
+  for (; count > 0; count--)
+  {
+    proto_tree *tree_shortids;
+    tree_shortids = proto_item_add_subtree(tree, ett_address);
+    proto_tree *subtree;
+    ti = proto_tree_add_item(tree_shortids, &hfi_msg_cmpctblock_shortids, tvb, offset, 6, ENC_NA);
+    subtree = proto_item_add_subtree(ti, ett_tx_in_list);
+    proto_tree_add_item(subtree, &hfi_msg_cmpctblock_shortids_id, tvb, offset, 6, ENC_NA);
+    offset += 6;
+  }
+
+  get_varint(tvb, offset, &length, &count);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_cmpctblock_prefilledtxn_count8, &hfi_msg_cmpctblock_prefilledtxn_count16,
+                  &hfi_msg_cmpctblock_prefilledtxn_count32, &hfi_msg_cmpctblock_prefilledtxn_count64);
+  offset += length;
+
+  msgnum = 0;
+  for (; count > 0; count--)
+  {
+    get_varint(tvb, offset, &length, &index);
+    add_varint_item(tree, tvb, offset, length, &hfi_msg_cmpctblock_prefilledtx_index8, &hfi_msg_cmpctblock_prefilledtx_index16,
+                    &hfi_msg_cmpctblock_prefilledtx_index32, &hfi_msg_cmpctblock_prefilledtx_index64);
+    offset += length;
+    msgnum += 1;
+    offset = dissect_dash_msg_tx_common(tvb, offset, pinfo, tree, msgnum);
+  }
+
+  return offset;
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  
 }
 
 /**
@@ -2582,6 +3661,8 @@ dissect_dash_msg_cmpctblock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
 static int
 dissect_dash_msg_getblocktxn(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
 {
+// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+#if 0
   proto_item *ti;
   guint32     offset = 0;
 
@@ -2589,6 +3670,40 @@ dissect_dash_msg_getblocktxn(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *
   tree = proto_item_add_subtree(ti, ett_dash_msg);
 
   return tvb_captured_length(tvb);
+#endif
+  proto_item *ti;
+  gint        length;
+  guint64     count;
+  guint64     index;
+  guint32     offset = 0;
+
+  /*  getblocktxn
+   *    [32] blockhash    Binary blob
+   *    [ ?] txn_count    var_int
+   *    [ ?] txn_index    var_int[]
+   */
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_getblocktxn, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_msg_getblocktxn_hash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  get_varint(tvb, offset, &length, &count);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_getblocktxn_tx_count8, &hfi_msg_getblocktxn_tx_count16,
+                  &hfi_msg_getblocktxn_tx_count32, &hfi_msg_getblocktxn_tx_count64);
+  offset += length;
+
+  for (; count>0; count--)
+  {
+    get_varint(tvb, offset, &length, &index);
+    add_varint_item(tree, tvb, offset, length, &hfi_msg_getblocktxn_tx_index8, &hfi_msg_getblocktxn_tx_index16,
+                    &hfi_msg_getblocktxn_tx_index32, &hfi_msg_getblocktxn_tx_index64);
+    offset += length;
+  }
+
+  return offset;
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< 
 }
 
 /**
@@ -2603,9 +3718,16 @@ dissect_dash_msg_sendcmpct(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tr
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_sendcmpct, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
+// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+  proto_tree_add_item(tree, &hfi_msg_sendcmpct_announce, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+  offset += 1;
+  proto_tree_add_item(tree, &hfi_msg_sendcmpct_version, tvb, offset, 8, ENC_LITTLE_ENDIAN);
+  offset += 8;
 
-  return tvb_captured_length(tvb);
+  return offset;
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 }
+
 
 /**
  * Handler for unimplemented or payload-less messages
@@ -2630,9 +3752,9 @@ static int dissect_dash_tcp_pdu(tvbuff_t *tvb, packet_info *pinfo, proto_tree *t
 
   /* add basic protocol data */
   proto_tree_add_item(tree, &hfi_dash_magic,   tvb,  0,  4, ENC_BIG_ENDIAN);
-  proto_tree_add_item_ret_string(tree, hfi_dash_command.id, tvb,  4, 12, ENC_ASCII|ENC_NA, wmem_packet_scope(), &command);
+  proto_tree_add_item_ret_string(tree, &hfi_dash_command, tvb,  4, 12, ENC_ASCII|ENC_NA, wmem_packet_scope(), &command);
   proto_tree_add_item(tree, &hfi_dash_length,  tvb, 16,  4, ENC_LITTLE_ENDIAN);
-  proto_tree_add_checksum(tree, tvb, 20, hfi_dash_checksum.id, -1, NULL, pinfo, 0, ENC_BIG_ENDIAN, PROTO_CHECKSUM_NO_FLAGS);
+  proto_tree_add_checksum(tree, tvb, 20, &hfi_dash_checksum, -1, NULL, pinfo, 0, ENC_BIG_ENDIAN, PROTO_CHECKSUM_NO_FLAGS);
 
   offset = 24;
 
@@ -3240,6 +4362,15 @@ dissect_dash_msg_txlvote(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree
 
   // Outpoint Masternode
   offset = create_coutputpoint_tree(tvb, ti, &hfi_msg_txlvote_outpoint_masternode, offset);
+// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+  // Quorum Modifier
+  proto_tree_add_item(tree, &hfi_msg_txlvote_quorumModHash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  // ProTx Hash
+  proto_tree_add_item(tree, &hfi_msg_txlvote_proTxHash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   // Signature
   offset = create_signature_tree(tree, tvb, &hfi_msg_txlvote_vchsig, offset);
@@ -3484,6 +4615,554 @@ dissect_dash_heur(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void *dat
   return TRUE;
 }
 
+// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+/**
+ * Handler for getmnlistd messages
+ */
+
+static int
+dissect_dash_msg_getmnlistd(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_getmnlistd, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_msg_getmnlistd_baseblockhash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+  proto_tree_add_item(tree, &hfi_msg_getmnlistd_blockhash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  return offset;
+}
+
+/**
+ * Handler for mnlistdiff messages
+ */
+
+static int
+dissect_dash_msg_mnlistdiff(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnlistdiff, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  return tvb_captured_length(tvb);
+}
+
+/**
+ * Handler for senddsq messages
+ */
+
+static int
+dissect_dash_msg_senddsq(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_senddsq, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_msg_senddsq_enable, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+  offset += 1;
+
+  return offset;
+}
+
+/**
+ * Handler for clsig messages
+ */
+
+static int
+dissect_dash_msg_clsig(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_clsig, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_msg_clsig_height, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+  offset += 4;
+  proto_tree_add_item(tree, &hfi_msg_clsig_blockhash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+  proto_tree_add_item(tree, &hfi_msg_clsig_sig, tvb, offset, 96, ENC_NA);
+  offset += 96;
+
+  return offset;
+}
+
+/**
+ * Handler for islock messages
+ */
+
+static int
+dissect_dash_msg_islock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  gint        length;
+  guint64     inputnum;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_islock, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  get_varint(tvb, offset, &length, &inputnum);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_islock_input_count8, &hfi_msg_islock_input_count16,
+                  &hfi_msg_islock_input_count32, &hfi_msg_islock_input_count64);
+  offset += length;
+
+  for (; inputnum > 0; inputnum--)
+  {
+    offset = create_coutputpoint_tree(tvb, ti, &hfi_msg_islock_inputs, offset);
+  }
+
+  proto_tree_add_item(tree, &hfi_msg_islock_txid, tvb, offset, 32, ENC_NA);
+  offset += 32;
+  proto_tree_add_item(tree, &hfi_msg_islock_sig, tvb, offset, 96, ENC_NA);
+  offset += 96;
+
+  return offset;
+}
+
+/**
+ * Handler for mnauth messages
+ */
+
+static int
+dissect_dash_msg_mnauth(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_mnauth, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_msg_mnauth_proregtx, tvb, offset, 32, ENC_NA);
+  offset += 32;
+  proto_tree_add_item(tree, &hfi_msg_mnauth_blssignature, tvb, offset, 96, ENC_NA);
+  offset += 96;
+
+  return offset;
+}
+
+/**
+ * Handler for qcontrib messages
+ */
+
+static int
+dissect_dash_msg_qcontrib(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  gint        length;
+  guint64     vvecSize;
+  guint64     skCount;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_qcontrib, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_msg_qcontrib_llmq_type, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+  offset += 1;
+
+  proto_tree_add_item(tree, &hfi_msg_qcontrib_quorum_hash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+  proto_tree_add_item(tree, &hfi_msg_qcontrib_protx_hash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  get_varint(tvb, offset, &length, &vvecSize);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_qcontrib_vvec_size8, &hfi_msg_qcontrib_vvec_size16,
+                  &hfi_msg_qcontrib_vvec_size32, &hfi_msg_qcontrib_vvec_size64);
+  offset += length;
+
+  for (; vvecSize > 0; vvecSize--)
+  {
+    proto_item *subti = proto_tree_add_item(tree, &hfi_msg_qcontrib_vvec, tvb, offset, 48, ENC_NA);
+    proto_tree *subtree = proto_item_add_subtree(subti, ett_tx_in_list);
+    // vvec
+    proto_tree_add_item(subtree, &hfi_msg_qcontrib_vvec_key, tvb, offset, 48, ENC_NA);
+    offset += 48;
+  }
+
+  proto_tree_add_item(tree, &hfi_msg_qcontrib_ephemeral_pubkey, tvb, offset, 48, ENC_NA);
+  offset += 48;
+
+  proto_tree_add_item(tree, &hfi_msg_qcontrib_iv, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  get_varint(tvb, offset, &length, &skCount);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_qcontrib_sk_count8, &hfi_msg_qcontrib_sk_count16,
+                  &hfi_msg_qcontrib_sk_count32, &hfi_msg_qcontrib_sk_count64);
+  offset += length;
+
+  for (; skCount > 0; skCount--)
+  {
+    proto_item *subti = proto_tree_add_item(tree, &hfi_msg_qcontrib_sk_contrib, tvb, offset, 33, ENC_NA);
+    proto_tree *subtree = proto_item_add_subtree(subti, ett_tx_in_list);
+
+    // size
+    proto_tree_add_item(subtree, &hfi_msg_qcontrib_sk_contrib_size, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+    offset += 1;
+    // secret key
+    proto_tree_add_item(subtree, &hfi_msg_qcontrib_sk_contrib_key, tvb, offset, 32, ENC_NA);
+    offset += 32;
+  }
+
+  proto_tree_add_item(tree, &hfi_msg_qcontrib_sig, tvb, offset, 96, ENC_NA);
+  offset += 96;
+
+  return offset;
+}
+
+/**
+ * Handler for qcomplaint messages
+ */
+
+static int
+dissect_dash_msg_qcomplaint(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  gint        length;
+  guint64     badbitSize;
+  guint64     complaintsbitSize;
+  guint64     spaces;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_qcomplaint, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_msg_qcomplaint_llmq_type, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+  offset += 1;
+
+  proto_tree_add_item(tree, &hfi_msg_qcomplaint_quorum_hash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+  proto_tree_add_item(tree, &hfi_msg_qcomplaint_protx_hash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  get_varint(tvb, offset, &length, &badbitSize);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_qcomplaint_badbit_size8, &hfi_msg_qcomplaint_badbit_size16,
+                  &hfi_msg_qcomplaint_badbit_size32, &hfi_msg_qcomplaint_badbit_size64);
+  offset += length;
+
+  spaces = (badbitSize + 7) / 8;
+  proto_tree_add_item(tree, &hfi_msg_qcomplaint_badmembers, tvb, offset, spaces, ENC_NA);
+  offset += spaces;
+
+  get_varint(tvb, offset, &length, &complaintsbitSize);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_qcomplaint_complaintbit_size8, &hfi_msg_qcomplaint_complaintbit_size16,
+                  &hfi_msg_qcomplaint_complaintbit_size32, &hfi_msg_qcomplaint_complaintbit_size64);
+  offset += length;
+
+  spaces = (complaintsbitSize + 7) / 8;
+  proto_tree_add_item(tree, &hfi_msg_qcomplaint_complaints, tvb, offset, spaces, ENC_NA);
+  offset += spaces;
+
+  proto_tree_add_item(tree, &hfi_msg_qcomplaint_sig, tvb, offset, 96, ENC_NA);
+  offset += 96;
+  
+  return offset;
+}
+
+/**
+ * Handler for qjustify messages
+ */
+
+static int
+dissect_dash_msg_qjustify(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  gint        length;
+  guint64     skjustifySize;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_qjustify, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_msg_qjustify_llmq_type, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+  offset += 1;
+
+  proto_tree_add_item(tree, &hfi_msg_qjustify_quorum_hash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+  proto_tree_add_item(tree, &hfi_msg_qjustify_protx_hash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  get_varint(tvb, offset, &length, &skjustifySize);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_qjustify_sk_count8, &hfi_msg_qjustify_sk_count16,
+                  &hfi_msg_qjustify_sk_count32, &hfi_msg_qjustify_sk_count64);
+  offset += length;
+
+  for (; skjustifySize > 0; skjustifySize--)
+  {
+    proto_item *subti = proto_tree_add_item(tree, &hfi_msg_qjustify_sk_justify, tvb, offset, 36, ENC_NA);
+    proto_tree *subtree = proto_item_add_subtree(subti, ett_tx_in_list);
+    // size
+    proto_tree_add_item(subtree, &hfi_msg_qjustify_sk_justify_idx, tvb, offset, 4, ENC_LITTLE_ENDIAN);
+    offset += 4;
+    // secret key
+    proto_tree_add_item(subtree, &hfi_msg_qjustify_sk_justify_key, tvb, offset, 32, ENC_NA);
+    offset += 32;
+  }
+
+  proto_tree_add_item(tree, &hfi_msg_qjustify_sig, tvb, offset, 96, ENC_NA);
+  offset += 96;
+  
+  return offset;
+}
+
+/**
+ * Handler for qpcommit messages
+ */
+
+static int
+dissect_dash_msg_qpcommit(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  gint        length;
+  guint64     validmemberSize;
+  guint64     spaces;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_qpcommit, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_msg_qpcommit_llmq_type, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+  offset += 1;
+
+  proto_tree_add_item(tree, &hfi_msg_qpcommit_quorum_hash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+  proto_tree_add_item(tree, &hfi_msg_qpcommit_protx_hash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  get_varint(tvb, offset, &length, &validmemberSize);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_qpcommit_validmember_size8, &hfi_msg_qpcommit_validmember_size16,
+                  &hfi_msg_qpcommit_validmember_size32, &hfi_msg_qpcommit_validmember_size64);
+  offset += length;
+
+  spaces = (validmemberSize + 7) / 8;
+  proto_tree_add_item(tree, &hfi_msg_qpcommit_validmembers, tvb, offset, spaces, ENC_NA);
+  offset += spaces;
+
+  proto_tree_add_item(tree, &hfi_msg_qpcommit_quorum_pubkey, tvb, offset, 48, ENC_NA);
+  offset += 48;
+
+  proto_tree_add_item(tree, &hfi_msg_qpcommit_quorum_vvec_hash, tvb, offset, 32, ENC_NA);
+  offset += 32;
+
+  proto_tree_add_item(tree, &hfi_msg_qpcommit_quorum_sig, tvb, offset, 96, ENC_NA);
+  offset += 96;
+
+  proto_tree_add_item(tree, &hfi_msg_qpcommit_sig, tvb, offset, 96, ENC_NA);
+  offset += 96;
+  
+  return offset;
+}
+
+/**
+ * Handler for qfcommit messages
+ */
+
+static int
+dissect_dash_msg_qfcommit(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  return dissect_dash_msg_qfcommit_common(tvb, 0, tree);
+}
+
+/**
+ * Handler for qbsigs messages
+ */
+
+static int
+dissect_dash_msg_qbsigs(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  gint        length;
+  guint64     batchCount;
+  guint64     shareCount;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_qbsigs, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  get_varint(tvb, offset, &length, &batchCount);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_qbsigs_batchcount8, &hfi_msg_qbsigs_batchcount16,
+                  &hfi_msg_qbsigs_batchcount32, &hfi_msg_qbsigs_batchcount64);
+  offset += length;
+  for (; batchCount > 0; batchCount--)
+  {
+    proto_item *subti   = proto_tree_add_item(tree, &hfi_msg_qbsigs_batched_sigshares, tvb, offset, -1, ENC_NA);
+    proto_tree *subtree = proto_item_add_subtree(subti, ett_tx_in_list);
+    offset = get_quorum_session_id(subtree, tvb, offset, &hfi_msg_qbsigs_batched_sigshares_sessionid);
+    get_varint(tvb, offset, &length, &shareCount);
+    add_varint_item(subtree, tvb, offset, length, &hfi_msg_qbsigs_batched_sigshares_sharecount8, &hfi_msg_qbsigs_batched_sigshares_sharecount16,
+                    &hfi_msg_qbsigs_batched_sigshares_sharecount32, &hfi_msg_qbsigs_batched_sigshares_sharecount64);
+    offset += length;
+    for(; shareCount > 0; shareCount--) {
+      proto_item *subti2 = proto_tree_add_item(subtree, &hfi_msg_qbsigs_batched_sigshares_sigshares, tvb, offset, 98, ENC_NA);
+      proto_tree *subtree2 = proto_item_add_subtree(subti2, ett_tx_in_list);
+      // index
+      proto_tree_add_item(subtree2, &hfi_msg_qbsigs_batched_sigshares_sigshares_index, tvb, offset, 2, ENC_LITTLE_ENDIAN);
+      offset += 2;
+      // bls signature
+      proto_tree_add_item(subtree2, &hfi_msg_qbsigs_batched_sigshares_sigshares_sig, tvb, offset, 96, ENC_NA);
+      offset += 96;
+    }
+  }
+  return offset;
+}
+
+/**
+ * Handler for qgetsigs messages
+ */
+
+static int
+dissect_dash_msg_qgetsigs(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  gint        length;
+  guint64     count;
+  guint64     invSize;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_qgetsigs, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  get_varint(tvb, offset, &length, &count);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_qgetsigs_count8, &hfi_msg_qgetsigs_count16,
+                  &hfi_msg_qgetsigs_count32, &hfi_msg_qgetsigs_count64);
+  offset += length;
+  for (; count > 0; count--)
+  {
+    proto_item *subti   = proto_tree_add_item(tree, &hfi_msg_qgetsigs_sigs, tvb, offset, -1, ENC_NA);
+    proto_tree *subtree = proto_item_add_subtree(subti, ett_tx_in_list);
+    offset = get_quorum_session_id(subtree, tvb, offset, &hfi_msg_qgetsigs_sigs_sessionid);
+    get_varint(tvb, offset, &length, &invSize);
+    add_varint_item(subtree, tvb, offset, length, &hfi_msg_qgetsigs_sigs_invsize8, &hfi_msg_qgetsigs_sigs_invsize16,
+                    &hfi_msg_qgetsigs_sigs_invsize32, &hfi_msg_qgetsigs_sigs_invsize64);
+    offset += length;
+    offset = get_quorum_sig_inventory(subtree, tvb, offset, &hfi_msg_qgetsigs_sigs_inv, invSize);
+  }
+  return offset;
+}
+
+/**
+ * Handler for qsendrecsigs messages
+ */
+
+static int
+dissect_dash_msg_qsendrecsigs(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_qsendrecsigs, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_msg_qsendrecsigs_enable, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+  offset += 1;
+
+  return offset;
+}
+
+/**
+ * Handler for qsigrec messages
+ */
+
+static int
+dissect_dash_msg_qsigrec(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_qsigrec, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  proto_tree_add_item(tree, &hfi_msg_qsigrec_llmq_type, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+  offset += 1;
+  proto_tree_add_item(tree, &hfi_msg_qsigrec_quorumhash, tvb, offset, 32, ENC_LITTLE_ENDIAN);
+  offset += 32;
+  proto_tree_add_item(tree, &hfi_msg_qsigrec_id, tvb, offset, 32, ENC_LITTLE_ENDIAN);
+  offset += 32;
+  proto_tree_add_item(tree, &hfi_msg_qsigrec_msghash, tvb, offset, 32, ENC_LITTLE_ENDIAN);
+  offset += 32;
+  proto_tree_add_item(tree, &hfi_msg_qsigrec_sig, tvb, offset, 96, ENC_LITTLE_ENDIAN);
+  offset += 96;
+
+  return offset;
+}
+
+/**
+ * Handler for qsigsesann messages
+ */
+static int
+dissect_dash_msg_qsigsesann(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  gint        length;
+  guint64     count;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_qsigsesann, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  get_varint(tvb, offset, &length, &count);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_qsigsesann_count8, &hfi_msg_qsigsesann_count16,
+                  &hfi_msg_qsigsesann_count32, &hfi_msg_qsigsesann_count64);
+  offset += length;
+
+  for (; count > 0; count--)
+  {
+    proto_item *subti   = proto_tree_add_item(tree, &hfi_msg_qsigsesann_sesann, tvb, offset, -1, ENC_NA);
+    proto_tree *subtree = proto_item_add_subtree(subti, ett_dash_msg);
+    offset = get_quorum_session_id(subtree, tvb, offset, &hfi_msg_qsigsesann_sesann_sessionid);
+    proto_tree_add_item(subtree, &hfi_msg_qsigsesann_sesann_llmq_type, tvb, offset, 1, ENC_LITTLE_ENDIAN);
+    offset += 1;
+    proto_tree_add_item(subtree, &hfi_msg_qsigsesann_sesann_quorum_hash, tvb, offset, 32, ENC_NA);
+    offset += 32;
+    proto_tree_add_item(subtree, &hfi_msg_qsigsesann_sesann_request_id, tvb, offset, 32, ENC_NA);
+    offset += 32;
+    proto_tree_add_item(subtree, &hfi_msg_qsigsesann_sesann_message_hash, tvb, offset, 32, ENC_NA);
+    offset += 32;
+  }
+  return offset;
+}
+
+/**
+ * Handler for qsigsinv messages
+ */
+static int
+dissect_dash_msg_qsigsinv(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
+{
+  proto_item *ti;
+  gint        length;
+  guint64     count;
+  guint64     invSize;
+  guint32     offset = 0;
+
+  ti   = proto_tree_add_item(tree, &hfi_dash_msg_qgetsigs, tvb, offset, -1, ENC_NA);
+  tree = proto_item_add_subtree(ti, ett_dash_msg);
+
+  get_varint(tvb, offset, &length, &count);
+  add_varint_item(tree, tvb, offset, length, &hfi_msg_qgetsigs_count8, &hfi_msg_qgetsigs_count16,
+                  &hfi_msg_qgetsigs_count32, &hfi_msg_qgetsigs_count64);
+  offset += length;
+  for (; count > 0; count--)
+  {
+    proto_item *subti   = proto_tree_add_item(tree, &hfi_msg_qgetsigs_sigs, tvb, offset, -1, ENC_NA);
+    proto_tree *subtree = proto_item_add_subtree(subti, ett_tx_in_list);
+    offset = get_quorum_session_id(subtree, tvb, offset, &hfi_msg_qgetsigs_sigs_sessionid);
+    get_varint(tvb, offset, &length, &invSize);
+    add_varint_item(subtree, tvb, offset, length, &hfi_msg_qgetsigs_sigs_invsize8, &hfi_msg_qgetsigs_sigs_invsize16,
+                    &hfi_msg_qgetsigs_sigs_invsize32, &hfi_msg_qgetsigs_sigs_invsize64);
+    offset += length;
+    offset = get_quorum_sig_inventory(subtree, tvb, offset, &hfi_msg_qgetsigs_sigs_inv, invSize);
+  }
+  return offset;
+}
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 void
 proto_register_dash(void)
 {
@@ -3513,6 +5192,9 @@ proto_register_dash(void)
     &hfi_msg_version_user_agent,
     &hfi_msg_version_start_height,
     &hfi_msg_version_relay,
+// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>  
+    &hfi_msg_version_mn_challenge,
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<    
 
     /* addr message */
     &hfi_msg_addr_count8,
@@ -3615,6 +5297,87 @@ proto_register_dash(void)
     &hfi_msg_tx_extra_payload_size32,
     &hfi_msg_tx_extra_payload_size64,
     &hfi_msg_tx_extra_payload,
+
+  // jhhong add 19.07.10 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+  /* extra-payload: ProRegTx */
+    &hfi_msg_tx_extra_proregtx,
+    &hfi_msg_tx_extra_proregtx_version,
+    &hfi_msg_tx_extra_proregtx_type,
+    &hfi_msg_tx_extra_proregtx_mode,
+    &hfi_msg_tx_extra_proregtx_collateral_outpoint,
+    &hfi_msg_tx_extra_proregtx_ipaddr,
+    &hfi_msg_tx_extra_proregtx_port,
+    &hfi_msg_tx_extra_proregtx_keyid_owner,
+    &hfi_msg_tx_extra_proregtx_opr_pubkey,
+    &hfi_msg_tx_extra_proregtx_keyid_voting,
+    &hfi_msg_tx_extra_proregtx_opr_reward,
+    &hfi_msg_tx_extra_proregtx_script,
+    &hfi_msg_tx_extra_proregtx_script_size8,
+    &hfi_msg_tx_extra_proregtx_script_size16,
+    &hfi_msg_tx_extra_proregtx_script_size32,
+    &hfi_msg_tx_extra_proregtx_script_size64,
+    &hfi_msg_tx_extra_proregtx_script_data,
+    &hfi_msg_tx_extra_proregtx_inputshash,
+    &hfi_msg_tx_extra_proregtx_payloadsig_size8,
+    &hfi_msg_tx_extra_proregtx_payloadsig_size16,
+    &hfi_msg_tx_extra_proregtx_payloadsig_size32,
+    &hfi_msg_tx_extra_proregtx_payloadsig_size64,
+    &hfi_msg_tx_extra_proregtx_payloadsig,
+
+  /* extra-payload: ProUpServTx */
+    &hfi_msg_tx_extra_proupservtx,
+    &hfi_msg_tx_extra_proupservtx_version,
+    &hfi_msg_tx_extra_proupservtx_protxhash,
+    &hfi_msg_tx_extra_proupservtx_ipaddr,
+    &hfi_msg_tx_extra_proupservtx_port,
+    &hfi_msg_tx_extra_proupservtx_script_size8,
+    &hfi_msg_tx_extra_proupservtx_script_size16,
+    &hfi_msg_tx_extra_proupservtx_script_size32,
+    &hfi_msg_tx_extra_proupservtx_script_size64,
+    &hfi_msg_tx_extra_proupservtx_script,
+    &hfi_msg_tx_extra_proupservtx_inputshash,
+    &hfi_msg_tx_extra_proupservtx_payloadsig,
+
+  /* extra-payload: ProUpRegTx */
+    &hfi_msg_tx_extra_proupregtx,
+    &hfi_msg_tx_extra_proupregtx_version,
+    &hfi_msg_tx_extra_proupregtx_protxhash,
+    &hfi_msg_tx_extra_proupregtx_mode,
+    &hfi_msg_tx_extra_proupregtx_opr_pubkey,
+    &hfi_msg_tx_extra_proupregtx_keyid_voting,
+    &hfi_msg_tx_extra_proupregtx_script,
+    &hfi_msg_tx_extra_proupregtx_script_size8,
+    &hfi_msg_tx_extra_proupregtx_script_size16,
+    &hfi_msg_tx_extra_proupregtx_script_size32,
+    &hfi_msg_tx_extra_proupregtx_script_size64,
+    &hfi_msg_tx_extra_proupregtx_script_data,
+    &hfi_msg_tx_extra_proupregtx_inputshash,
+    &hfi_msg_tx_extra_proupregtx_payloadsig_size8,
+    &hfi_msg_tx_extra_proupregtx_payloadsig_size16,
+    &hfi_msg_tx_extra_proupregtx_payloadsig_size32,
+    &hfi_msg_tx_extra_proupregtx_payloadsig_size64,
+    &hfi_msg_tx_extra_proupregtx_payloadsig,
+    
+  /* extra-payload: ProUpRevTx */
+    &hfi_msg_tx_extra_prouprevtx,
+    &hfi_msg_tx_extra_prouprevtx_version,
+    &hfi_msg_tx_extra_prouprevtx_protxhash,
+    &hfi_msg_tx_extra_prouprevtx_reason,
+    &hfi_msg_tx_extra_prouprevtx_inputshash,
+    &hfi_msg_tx_extra_prouprevtx_payloadsig,
+
+  /* extra-payload: CbTx */
+    &hfi_msg_tx_extra_cbtx,
+    &hfi_msg_tx_extra_cbtx_version,
+    &hfi_msg_tx_extra_cbtx_height,
+    &hfi_msg_tx_extra_cbtx_merkle_mn,
+    &hfi_msg_tx_extra_cbtx_merkle_quorum,
+
+  /* extra-payload: QcTx */
+    &hfi_msg_tx_extra_qctx,
+    &hfi_msg_tx_extra_qctx_version,
+    &hfi_msg_tx_extra_qctx_height,
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     /* block message */
     &hfi_msg_block_transactions8,
@@ -3800,6 +5563,10 @@ proto_register_dash(void)
     &hfi_msg_txlvote_txhash,
     &hfi_msg_txlvote_outpoint,
     &hfi_msg_txlvote_outpoint_masternode,
+// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+    &hfi_msg_txlvote_quorumModHash,
+    &hfi_msg_txlvote_proTxHash,
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     &hfi_msg_txlvote_vchsig,
 
     /* govobj message */
@@ -3849,22 +5616,258 @@ proto_register_dash(void)
 
     /* blocktxn message */
     &hfi_dash_msg_blocktxn,
-
+// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>    
+    &hfi_msg_blocktxn_hash,
+    &hfi_msg_blocktxn_tx_count8,
+    &hfi_msg_blocktxn_tx_count16,
+    &hfi_msg_blocktxn_tx_count32,
+    &hfi_msg_blocktxn_tx_count64,
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     /* cmpctblock message */
     &hfi_dash_msg_cmpctblock,
+// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+    &hfi_msg_cmpctblock_version,
+    &hfi_msg_cmpctblock_prev_block,
+    &hfi_msg_cmpctblock_merkle_root,
+    &hfi_msg_cmpctblock_time,
+    &hfi_msg_cmpctblock_bits,
+    &hfi_msg_cmpctblock_nonce,
+    &hfi_msg_cmpctblock_shortids_nonce,
+    &hfi_msg_cmpctblock_shortids_count8,
+    &hfi_msg_cmpctblock_shortids_count16,
+    &hfi_msg_cmpctblock_shortids_count32,
+    &hfi_msg_cmpctblock_shortids_count64,
+    &hfi_msg_cmpctblock_shortids,
+    &hfi_msg_cmpctblock_shortids_id,
+    &hfi_msg_cmpctblock_prefilledtxn_count8,
+    &hfi_msg_cmpctblock_prefilledtxn_count16,
+    &hfi_msg_cmpctblock_prefilledtxn_count32,
+    &hfi_msg_cmpctblock_prefilledtxn_count64,
+    &hfi_msg_cmpctblock_prefilledtx,
+    &hfi_msg_cmpctblock_prefilledtx_index8,
+    &hfi_msg_cmpctblock_prefilledtx_index16,
+    &hfi_msg_cmpctblock_prefilledtx_index32,
+    &hfi_msg_cmpctblock_prefilledtx_index64,
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     /* getblocktxn message */
     &hfi_dash_msg_getblocktxn,
+// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+    &hfi_msg_getblocktxn_hash,
+    &hfi_msg_getblocktxn_tx_count8,
+    &hfi_msg_getblocktxn_tx_count16,
+    &hfi_msg_getblocktxn_tx_count32,
+    &hfi_msg_getblocktxn_tx_count64,
+    &hfi_msg_getblocktxn_tx_index8,
+    &hfi_msg_getblocktxn_tx_index16,
+    &hfi_msg_getblocktxn_tx_index32,
+    &hfi_msg_getblocktxn_tx_index64,
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     /* sendcmpct message */
     &hfi_dash_msg_sendcmpct,
-
+// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+    &hfi_msg_sendcmpct_announce,
+    &hfi_msg_sendcmpct_version,
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     /* Special transactions */
     &hfi_msg_specialtx_payload_version,
 
     /* SubTx Register */
     &hfi_dash_msg_subtx,
     &hfi_dash_msg_subtx_username,
+	
+// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>	
+	/* getmnlisted: */
+    &hfi_dash_msg_getmnlistd,
+    &hfi_msg_getmnlistd_baseblockhash,
+    &hfi_msg_getmnlistd_blockhash,
+
+  /* mnlistdiff: */
+    &hfi_dash_msg_mnlistdiff,
+    
+  /* senddsq message: */
+    &hfi_dash_msg_senddsq,
+    &hfi_msg_senddsq_enable,
+    
+  /* clsig messsage: */
+    &hfi_dash_msg_clsig,
+    &hfi_msg_clsig_height,
+    &hfi_msg_clsig_blockhash,
+    &hfi_msg_clsig_sig,
+
+  /* islock message: */
+    &hfi_dash_msg_islock,
+    &hfi_msg_islock_input_count8,
+    &hfi_msg_islock_input_count16,
+    &hfi_msg_islock_input_count32,
+    &hfi_msg_islock_input_count64,
+    &hfi_msg_islock_inputs,
+    &hfi_msg_islock_txid,
+    &hfi_msg_islock_sig,
+
+  /* mnauth message: */
+    &hfi_dash_msg_mnauth,
+    &hfi_msg_mnauth_proregtx,
+    &hfi_msg_mnauth_blssignature,
+
+  /* qcontrib: */
+    &hfi_dash_msg_qcontrib,
+    &hfi_msg_qcontrib_llmq_type,
+    &hfi_msg_qcontrib_quorum_hash,
+    &hfi_msg_qcontrib_protx_hash,
+    &hfi_msg_qcontrib_vvec_size8,
+    &hfi_msg_qcontrib_vvec_size16,
+    &hfi_msg_qcontrib_vvec_size32,
+    &hfi_msg_qcontrib_vvec_size64,
+    &hfi_msg_qcontrib_vvec,
+    &hfi_msg_qcontrib_vvec_key,
+    &hfi_msg_qcontrib_ephemeral_pubkey,
+    &hfi_msg_qcontrib_iv,
+    &hfi_msg_qcontrib_sk_count8,
+    &hfi_msg_qcontrib_sk_count16,
+    &hfi_msg_qcontrib_sk_count32,
+    &hfi_msg_qcontrib_sk_count64,
+    &hfi_msg_qcontrib_sk_contrib,
+    &hfi_msg_qcontrib_sk_contrib_size,
+    &hfi_msg_qcontrib_sk_contrib_key,
+    &hfi_msg_qcontrib_sig,
+
+  /* qcomplaint message */
+    &hfi_dash_msg_qcomplaint,
+    &hfi_msg_qcomplaint_llmq_type,
+    &hfi_msg_qcomplaint_quorum_hash,
+    &hfi_msg_qcomplaint_protx_hash,
+    &hfi_msg_qcomplaint_badbit_size8,
+    &hfi_msg_qcomplaint_badbit_size16,
+    &hfi_msg_qcomplaint_badbit_size32,
+    &hfi_msg_qcomplaint_badbit_size64,
+    &hfi_msg_qcomplaint_badmembers,
+    &hfi_msg_qcomplaint_complaintbit_size8,
+    &hfi_msg_qcomplaint_complaintbit_size16,
+    &hfi_msg_qcomplaint_complaintbit_size32,
+    &hfi_msg_qcomplaint_complaintbit_size64,
+    &hfi_msg_qcomplaint_complaints,
+    &hfi_msg_qcomplaint_sig,
+
+  /* qjustify */
+    &hfi_dash_msg_qjustify,
+    &hfi_msg_qjustify_llmq_type,
+    &hfi_msg_qjustify_quorum_hash,
+    &hfi_msg_qjustify_protx_hash,
+    &hfi_msg_qjustify_sk_count8,
+    &hfi_msg_qjustify_sk_count16,
+    &hfi_msg_qjustify_sk_count32,
+    &hfi_msg_qjustify_sk_count64,
+    &hfi_msg_qjustify_sk_justify,
+    &hfi_msg_qjustify_sk_justify_idx,
+    &hfi_msg_qjustify_sk_justify_key,
+    &hfi_msg_qjustify_sig,
+
+  /* qpcommit */
+    &hfi_dash_msg_qpcommit,
+    &hfi_msg_qpcommit_llmq_type,
+    &hfi_msg_qpcommit_quorum_hash,
+    &hfi_msg_qpcommit_protx_hash,
+    &hfi_msg_qpcommit_validmember_size8,
+    &hfi_msg_qpcommit_validmember_size16,
+    &hfi_msg_qpcommit_validmember_size32,
+    &hfi_msg_qpcommit_validmember_size64,
+    &hfi_msg_qpcommit_validmembers,
+    &hfi_msg_qpcommit_quorum_pubkey,
+    &hfi_msg_qpcommit_quorum_vvec_hash,
+    &hfi_msg_qpcommit_quorum_sig,
+    &hfi_msg_qpcommit_sig,
+    
+  /* qfcommit */
+    &hfi_dash_msg_qfcommit,
+    &hfi_msg_qfcommit_version,
+    &hfi_msg_qfcommit_llmq_type,
+    &hfi_msg_qfcommit_quorum_hash,
+    &hfi_msg_qfcommit_singers_size8,
+    &hfi_msg_qfcommit_singers_size16,
+    &hfi_msg_qfcommit_singers_size32,
+    &hfi_msg_qfcommit_singers_size64,
+    &hfi_msg_qfcommit_singers,
+    &hfi_msg_qfcommit_validmember_size8,
+    &hfi_msg_qfcommit_validmember_size16,
+    &hfi_msg_qfcommit_validmember_size32,
+    &hfi_msg_qfcommit_validmember_size64,
+    &hfi_msg_qfcommit_validmembers,
+    &hfi_msg_qfcommit_quorum_pubkey,
+    &hfi_msg_qfcommit_quorum_vvec_hash,
+    &hfi_msg_qfcommit_quorum_sig,
+    &hfi_msg_qfcommit_sig,
+
+  /* qbsigs */
+    &hfi_dash_msg_qbsigs,
+    &hfi_msg_qbsigs_batchcount8,
+    &hfi_msg_qbsigs_batchcount16,
+    &hfi_msg_qbsigs_batchcount32,
+    &hfi_msg_qbsigs_batchcount64,
+    &hfi_msg_qbsigs_batched_sigshares,
+    &hfi_msg_qbsigs_batched_sigshares_sessionid,
+    &hfi_msg_qbsigs_batched_sigshares_sharecount8,
+    &hfi_msg_qbsigs_batched_sigshares_sharecount16,
+    &hfi_msg_qbsigs_batched_sigshares_sharecount32,
+    &hfi_msg_qbsigs_batched_sigshares_sharecount64,
+    &hfi_msg_qbsigs_batched_sigshares_sigshares,
+    &hfi_msg_qbsigs_batched_sigshares_sigshares_index,
+    &hfi_msg_qbsigs_batched_sigshares_sigshares_sig,
+
+  /* qgetsigs */
+    &hfi_dash_msg_qgetsigs,
+    &hfi_msg_qgetsigs_count8,
+    &hfi_msg_qgetsigs_count16,
+    &hfi_msg_qgetsigs_count32,
+    &hfi_msg_qgetsigs_count64,
+    &hfi_msg_qgetsigs_sigs,
+    &hfi_msg_qgetsigs_sigs_sessionid,
+    &hfi_msg_qgetsigs_sigs_invsize8,
+    &hfi_msg_qgetsigs_sigs_invsize16,
+    &hfi_msg_qgetsigs_sigs_invsize32,
+    &hfi_msg_qgetsigs_sigs_invsize64,
+    &hfi_msg_qgetsigs_sigs_inv,
+
+  /* qsendrecsigs message: */
+    &hfi_dash_msg_qsendrecsigs,
+    &hfi_msg_qsendrecsigs_enable,
+
+  /* qsigrec */
+    &hfi_dash_msg_qsigrec,
+    &hfi_msg_qsigrec_llmq_type,
+    &hfi_msg_qsigrec_quorumhash,
+    &hfi_msg_qsigrec_id,
+    &hfi_msg_qsigrec_msghash,
+    &hfi_msg_qsigrec_sig,
+
+  /* qsigsesann message: */
+    &hfi_dash_msg_qsigsesann,
+    &hfi_msg_qsigsesann_count8,
+    &hfi_msg_qsigsesann_count16,
+    &hfi_msg_qsigsesann_count32,
+    &hfi_msg_qsigsesann_count64,
+    &hfi_msg_qsigsesann_sesann,
+    &hfi_msg_qsigsesann_sesann_sessionid,
+    &hfi_msg_qsigsesann_sesann_llmq_type,
+    &hfi_msg_qsigsesann_sesann_quorum_hash,
+    &hfi_msg_qsigsesann_sesann_request_id,
+    &hfi_msg_qsigsesann_sesann_message_hash,
+
+/* qsigsinv */
+    &hfi_dash_msg_qsigsinv,
+    &hfi_msg_qsigsinv_count8,
+    &hfi_msg_qsigsinv_count16,
+    &hfi_msg_qsigsinv_count32,
+    &hfi_msg_qsigsinv_count64,
+    &hfi_msg_qsigsinv_sigs,
+    &hfi_msg_qsigsinv_sigs_sessionid,
+    &hfi_msg_qsigsinv_sigs_invsize8,
+    &hfi_msg_qsigsinv_sigs_invsize16,
+    &hfi_msg_qsigsinv_sigs_invsize32,
+    &hfi_msg_qsigsinv_sigs_invsize64,
+    &hfi_msg_qsigsinv_sigs_inv,
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   };
 #endif
 
@@ -4025,6 +6028,9 @@ proto_reg_handoff_dash(void)
   dissector_add_string("dash.command", "filterclear", command_handle);
   dissector_add_string("dash.command", "sendheaders", command_handle);
   dissector_add_string("dash.command", "getsporks", command_handle);
+// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+  dissector_add_string("dash.command", "qwatch", command_handle);
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   /* messages not implemented */
   /* command_handle = create_dissector_handle( dissect_dash_msg_empty, hfi_dash->id ); */
@@ -4032,6 +6038,42 @@ proto_reg_handoff_dash(void)
   dissector_add_string("dash.command", "submitorder", command_handle);
   dissector_add_string("dash.command", "reply", command_handle);
   dissector_add_string("dash.command", "alert", command_handle);
+// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+  command_handle = create_dissector_handle( dissect_dash_msg_getmnlistd, hfi_dash->id );
+  dissector_add_string("dash.command", "getmnlistd", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_mnlistdiff, hfi_dash->id );
+  dissector_add_string("dash.command", "mnlistdiff", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_senddsq, hfi_dash->id );
+  dissector_add_string("dash.command", "senddsq", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_clsig, hfi_dash->id );
+  dissector_add_string("dash.command", "clsig", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_islock, hfi_dash->id );
+  dissector_add_string("dash.command", "islock", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_mnauth, hfi_dash->id );
+  dissector_add_string("dash.command", "mnauth", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_qcontrib, hfi_dash->id );
+  dissector_add_string("dash.command", "qcontrib", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_qcomplaint, hfi_dash->id );
+  dissector_add_string("dash.command", "qcomplaint", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_qjustify, hfi_dash->id );
+  dissector_add_string("dash.command", "qjustify", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_qpcommit, hfi_dash->id );
+  dissector_add_string("dash.command", "qpcommit", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_qfcommit, hfi_dash->id );
+  dissector_add_string("dash.command", "qfcommit", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_qbsigs, hfi_dash->id );
+  dissector_add_string("dash.command", "qbsigs", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_qgetsigs, hfi_dash->id );
+  dissector_add_string("dash.command", "qgetsigs", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_qsendrecsigs, hfi_dash->id );
+  dissector_add_string("dash.command", "qsendrecsigs", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_qsigrec, hfi_dash->id );
+  dissector_add_string("dash.command", "qsigrec", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_qsigsesann, hfi_dash->id );
+  dissector_add_string("dash.command", "qsigsesann", command_handle);
+  command_handle = create_dissector_handle( dissect_dash_msg_qsigsinv, hfi_dash->id );
+  dissector_add_string("dash.command", "qsigsinv", command_handle);
+// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 }
 
 /*
