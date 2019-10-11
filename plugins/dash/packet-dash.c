@@ -88,6 +88,7 @@ static const value_string inv_types[] =
   { 24, "MSG_QUORUM_COMPLAINT" },
   { 25, "MSG_QUORUM_JUSTIFICATION" },
   { 26, "MSG_QUORUM_PREMATURE_COMMITMENT" },
+  { 27, "MSG_QUORUM_DEBUG_STATUS (DEPRECATED)" },
   { 28, "MSG_QUORUM_RECOVERED_SIG" },
   { 29, "MSG_CLSIG" },
   { 30, "MSG_ISLOCK" },
@@ -242,17 +243,18 @@ static const value_string spork_description[] =
   { 10004, "SPORK_5_INSTANTSEND_MAX_VALUE" },
 // jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
   { 10005, "SPORK_6_NEW_SIGS" },
-//{ 10007, "SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT" },
 // jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  { 10007, "DEPRECATED_SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT" },
   { 10008, "SPORK_9_SUPERBLOCKS_ENABLED" },
 // jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>  
-//{ 10009, "SPORK_10_MASTERNODE_PAY_UPDATED_NODES" },
-//{ 10011, "SPORK_12_RECONSIDER_BLOCKS" },
-//{ 10012, "SPORK_13_OLD_SUPERBLOCK_FLAG" },
-//{ 10013, "SPORK_14_REQUIRE_SENTINEL_FLAG" },
+  { 10009, "DEPRECATED_SPORK_10_MASTERNODE_PAY_UPDATED_NODES" },
+  { 10011, "SPORK_12_RECONSIDER_BLOCKS" },
+  { 10012, "DEPRECATED_SPORK_13_OLD_SUPERBLOCK_FLAG" },
+  { 10013, "DEPRECATED_SPORK_14_REQUIRE_SENTINEL_FLAG" },
   { 10014, "SPORK_15_DETERMINISTIC_MNS_ENABLED" },
   { 10015, "SPORK_16_INSTANTSEND_AUTOLOCKS" },
   { 10016, "SPORK_17_QUORUM_DKG_ENABLED" },
+  { 10017, "DEPRECATED_SPORK_18_QUORUM_DEBUG_ENABLED" },
   { 10018, "SPORK_19_CHAINLOCKS_ENABLED" },
   { 10019, "SPORK_20_INSTANTSEND_LLMQ_BASED" },
 // jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -266,9 +268,9 @@ static const value_string masternode_sync_item_id[] =
   { 0, "MASTERNODE_SYNC_INITIAL" },
   { 1, "MASTERNODE_SYNC_SPORKS" },
 // jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>  
-//{ 2, "MASTERNODE_SYNC_LIST" },
-//{ 3, "MASTERNODE_SYNC_MNW" },
 // jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  { 2, "MASTERNODE_SYNC_LIST (DEPRECATED)" },
+  { 3, "MASTERNODE_SYNC_MNW (DEPRECATED)" },
   { 4, "MASTERNODE_SYNC_GOVERNANCE" },
   { 10, "MASTERNODE_SYNC_GOVOBJ" },
   { 11, "MASTERNODE_SYNC_GOVOBJ_VOTE" },
@@ -309,10 +311,7 @@ static const value_string special_tx_type[] =
   { 3, "Provider Update - Registrar (ProUpRegTx)" },
   { 4, "Provider Update - Key Revocation (ProUpRevTx)" },
   { 5, "Coinbase (CbTx)" },
-// jhhong add 19.07.10 >>>>>>>>>>>>>>>>>>>>>>>>>>> 
-//{ 6, "RESERVED" },
   { 6, "Quorum Commitment (QcTx)" },
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   { 7, "RESERVED" },
   { 8, "Subscription - Registration (SubTxRegister)" },
   { 9, "Subscription - Topup (SubTxTopup)" },
