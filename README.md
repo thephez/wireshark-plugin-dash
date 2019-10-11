@@ -23,8 +23,8 @@ This shows a dissected Masternode Ping message. The packet also contains a Gover
 ## Dash specific protocol implementation status (excludes items shared with the Bitcoin protocol)
 Name | Recognized | Dissected | Status | Description
 --- | --- | --- | --- | ---
-[blocktxn](https://dash-docs.github.io/en/developer-reference#blocktxn) | Y | N | | Block Transactions (compact block-related)
-[cmpctblock](https://dash-docs.github.io/en/developer-reference#cmpctblock) | Y | N | | Compact Block
+[blocktxn](https://dash-docs.github.io/en/developer-reference#blocktxn) | Y | Y | | Block Transactions (compact block-related)
+[cmpctblock](https://dash-docs.github.io/en/developer-reference#cmpctblock) | Y | Y | | Compact Block
 [dsa](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#dsaccept---dsa) | Y | Y |  | Darksend Accept
 [dsc](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#dscomplete---dsc) | Y | Y |  | Darksend Complete
 [dseg](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#dseg---dseg) | Y | Y |  | Masternode List/Entry Sync
@@ -34,7 +34,7 @@ Name | Recognized | Dissected | Status | Description
 [dss](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md) | Y | Y |  | Darksend Sign Final Transaction
 [dssu](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#dsstatusupdate---dssu) | Y | Y |  | Mixing Pool Status Update
 [dstx](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#dstx---dstx) | Y | Y |  | Darksend Broadcast
-[getblocktxn](https://dash-docs.github.io/en/developer-reference#getblocktxn) | Y | N | | Get block transaction(s) (compact block-related)
+[getblocktxn](https://dash-docs.github.io/en/developer-reference#getblocktxn) | Y | Y | | Get block transaction(s) (compact block-related)
 [govobj](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#mngovernanceobject---govobj) | Y | Y |  | Governance Object
 [govobjvote](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#mngovernanceobjectvote---govobjvote) | Y | Y |  | Governance Vote
 [govsync](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#mngovernancesync---govsync) | Y | Y |  | Governance Object Sync
@@ -45,7 +45,7 @@ Name | Recognized | Dissected | Status | Description
 [mnv](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#mnverify---mnv) | Y | Y |  | Masternode Verify
 [mnw](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#masternodepaymentvote---mnw) | Y | Y |  | Masternode Payment Vote
 [mnwb](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#masternodepaymentblock---mnwb) | Y | NA | Inventory only | Masternode Payment Block (no message - inventory only)
-[sendcmpct](https://dash-docs.github.io/en/developer-reference#sendcmpct) | Y | N | | Send compact blocks
+[sendcmpct](https://dash-docs.github.io/en/developer-reference#sendcmpct) | Y | Y | | Send compact blocks
 [spork](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#spork---spork)| Y | Y |  | Spork status
 [ssc](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#syncstatuscount---ssc) | Y | Y |  | Sync Status Count
 [txlvote](https://github.com/dashpay/dash/blob/master/dash-docs/protocol-documentation.md#txlockvote---txlvote) | Y | Y |  | Transaction Lock Vote

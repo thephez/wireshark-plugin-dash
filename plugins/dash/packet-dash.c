@@ -53,7 +53,7 @@
 
 #include <epan/dissectors/packet-tcp.h>
 
-#define DASH_MAIN_MAGIC_NUMBER       0xBD6B0CBF 
+#define DASH_MAIN_MAGIC_NUMBER       0xBD6B0CBF
 #define DASH_REGTEST_MAGIC_NUMBER    0xDCB7C1FC
 #define DASH_TESTNET3_MAGIC_NUMBER   0xFFCAE2CE
 #define DASH_DEVNET_MAGIC_NUMBER     0xCEFFCAE2
@@ -81,17 +81,16 @@ static const value_string inv_types[] =
   { 17, "MSG_GOVERNANCE_OBJECT" },
   { 18, "MSG_GOVERNANCE_OBJECT_VOTE" },
   { 19, "MSG_MASTERNODE_VERIFY" },
-  // jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
   { 20, "MSG_CMPCT_BLOCK" },
   { 21, "MSG_QUORUM_FINAL_COMMITMENT" },
   { 23, "MSG_QUORUM_CONTRIB" },
   { 24, "MSG_QUORUM_COMPLAINT" },
   { 25, "MSG_QUORUM_JUSTIFICATION" },
   { 26, "MSG_QUORUM_PREMATURE_COMMITMENT" },
+  { 27, "MSG_QUORUM_DEBUG_STATUS (DEPRECATED)" },
   { 28, "MSG_QUORUM_RECOVERED_SIG" },
   { 29, "MSG_CLSIG" },
   { 30, "MSG_ISLOCK" },
-  // jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   { 0, NULL }
 };
 
@@ -122,7 +121,7 @@ static const value_string filterload_nflags[] =
 
 static const value_string vote_outcome[] =
 {
-  // Defined in src/governance-vote.cpp - vote_outcome_enum_t 
+  // Defined in src/governance-vote.cpp - vote_outcome_enum_t
   // https://github.com/dashpay/dash/blob/master/src/governance-vote.h
 
   { 0x01, "VOTE_OUTCOME_NONE" },
@@ -133,7 +132,7 @@ static const value_string vote_outcome[] =
 
 static const value_string vote_signal[] =
 {
-  // Defined in src/governance-vote.cpp - vote_signal_enum_t 
+  // Defined in src/governance-vote.cpp - vote_signal_enum_t
   // https://github.com/dashpay/dash/blob/master/src/governance-vote.h
 
   { 0x00, "VOTE_SIGNAL_NONE" }, //   -- fund this object for it's stated amount
@@ -177,12 +176,13 @@ static const value_string vote_signal[] =
 
 static const value_string private_send_denomination[] =
 {
-  // Defined in src/darksend.cpp - InitDenominations() 
+  // Defined in src/darksend.cpp - InitDenominations()
   // https://github.com/dashpay/dash/blob/master/src/darksend.cpp
   { 0x01, "10 DASH" },
   { 0x02, "1 DASH" },
   { 0x04, "0.1 DASH" },
   { 0x08, "0.01 DASH" },
+  { 0x10, "0.001 DASH" },
 };
 
 static const value_string pool_message[] =
@@ -235,40 +235,35 @@ static const value_string pool_status_update[] =
 
 static const value_string spork_description[] =
 {
-  // Defined in src/spork.h 
+  // Defined in src/spork.h
   // https://github.com/dashpay/dash/blob/master/src/spork.h
   { 10001, "SPORK_2_INSTANTSEND_ENABLED" },
   { 10002, "SPORK_3_INSTANTSEND_BLOCK_FILTERING" },
   { 10004, "SPORK_5_INSTANTSEND_MAX_VALUE" },
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
   { 10005, "SPORK_6_NEW_SIGS" },
-//{ 10007, "SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT" },
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  { 10007, "DEPRECATED_SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT" },
   { 10008, "SPORK_9_SUPERBLOCKS_ENABLED" },
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>  
-//{ 10009, "SPORK_10_MASTERNODE_PAY_UPDATED_NODES" },
-//{ 10011, "SPORK_12_RECONSIDER_BLOCKS" },
-//{ 10012, "SPORK_13_OLD_SUPERBLOCK_FLAG" },
-//{ 10013, "SPORK_14_REQUIRE_SENTINEL_FLAG" },
+  { 10009, "DEPRECATED_SPORK_10_MASTERNODE_PAY_UPDATED_NODES" },
+  { 10011, "SPORK_12_RECONSIDER_BLOCKS" },
+  { 10012, "DEPRECATED_SPORK_13_OLD_SUPERBLOCK_FLAG" },
+  { 10013, "DEPRECATED_SPORK_14_REQUIRE_SENTINEL_FLAG" },
   { 10014, "SPORK_15_DETERMINISTIC_MNS_ENABLED" },
   { 10015, "SPORK_16_INSTANTSEND_AUTOLOCKS" },
   { 10016, "SPORK_17_QUORUM_DKG_ENABLED" },
+  { 10017, "DEPRECATED_SPORK_18_QUORUM_DEBUG_ENABLED" },
   { 10018, "SPORK_19_CHAINLOCKS_ENABLED" },
   { 10019, "SPORK_20_INSTANTSEND_LLMQ_BASED" },
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 };
 
 static const value_string masternode_sync_item_id[] =
 {
-  // Defined in src/masternodesync.h 
+  // Defined in src/masternodesync.h
   // https://github.com/dashpay/dash/blob/master/src/masternode-sync.h
   { -1, "MASTERNODE_SYNC_FAILED" },
   { 0, "MASTERNODE_SYNC_INITIAL" },
   { 1, "MASTERNODE_SYNC_SPORKS" },
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>  
-//{ 2, "MASTERNODE_SYNC_LIST" },
-//{ 3, "MASTERNODE_SYNC_MNW" },
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  { 2, "MASTERNODE_SYNC_LIST (DEPRECATED)" },
+  { 3, "MASTERNODE_SYNC_MNW (DEPRECATED)" },
   { 4, "MASTERNODE_SYNC_GOVERNANCE" },
   { 10, "MASTERNODE_SYNC_GOVOBJ" },
   { 11, "MASTERNODE_SYNC_GOVOBJ_VOTE" },
@@ -309,10 +304,7 @@ static const value_string special_tx_type[] =
   { 3, "Provider Update - Registrar (ProUpRegTx)" },
   { 4, "Provider Update - Key Revocation (ProUpRevTx)" },
   { 5, "Coinbase (CbTx)" },
-// jhhong add 19.07.10 >>>>>>>>>>>>>>>>>>>>>>>>>>> 
-//{ 6, "RESERVED" },
   { 6, "Quorum Commitment (QcTx)" },
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   { 7, "RESERVED" },
   { 8, "Subscription - Registration (SubTxRegister)" },
   { 9, "Subscription - Topup (SubTxTopup)" },
@@ -320,7 +312,6 @@ static const value_string special_tx_type[] =
   { 11, "Subscription - Account Close (SubTxCloseAccount)" },
 };
 
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>  
 static const value_string llmq_type[] =
 {
   // Defined in src/consensus/params.h
@@ -329,7 +320,6 @@ static const value_string llmq_type[] =
   { 3,   "LLMQ_400_85" },
   { 100, "LLMQ_5_60" },
 };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /*
  * Minimum dash identification header.
@@ -412,10 +402,9 @@ static header_field_info hfi_msg_version_start_height DASH_HFI_INIT =
 
 static header_field_info hfi_msg_version_relay DASH_HFI_INIT =
   { "Relay flag", "dash.version.relay", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 static header_field_info hfi_msg_version_mn_challenge DASH_HFI_INIT =
   { "Masternode Auth Challenge", "dash.version.mnchallenge", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* addr message */
 static header_field_info hfi_msg_addr_count8 DASH_HFI_INIT =
@@ -661,7 +650,6 @@ static header_field_info hfi_msg_tx_extra_payload_size64 DASH_HFI_INIT =
 static header_field_info hfi_msg_tx_extra_payload DASH_HFI_INIT =
   { "Extra Payload", "dash.tx.extra_payload", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
-// jhhong add 19.07.10 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 /* tx.proregtx */
 static header_field_info hfi_msg_tx_extra_proregtx DASH_HFI_INIT =
   { "ProRegTx Payload", "dash.tx.proregtx", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -716,7 +704,7 @@ static header_field_info hfi_msg_tx_extra_proupservtx DASH_HFI_INIT =
 static header_field_info hfi_msg_tx_extra_proupservtx_version DASH_HFI_INIT =
   { "Version", "dash.tx.proupservtx.version", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_tx_extra_proupservtx_protxhash DASH_HFI_INIT =
-  { "ProRegTx Hash", "dash.tx.proupservtx.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };  
+  { "ProRegTx Hash", "dash.tx.proupservtx.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_tx_extra_proupservtx_ipaddr DASH_HFI_INIT =
   { "IP address", "dash.tx.proupservtx.ipaddr", FT_IPv6, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_tx_extra_proupservtx_port DASH_HFI_INIT =
@@ -807,7 +795,6 @@ static header_field_info hfi_msg_tx_extra_qctx_version DASH_HFI_INIT =
   { "Version", "dash.tx.qctx.version", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_tx_extra_qctx_height DASH_HFI_INIT =
   { "Block Height", "dash.tx.qctx.height", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* block message */
 static header_field_info hfi_msg_block_transactions8 DASH_HFI_INIT =
@@ -1009,7 +996,6 @@ static header_field_info hfi_address_port DASH_HFI_INIT =
 /* blocktxn message */
 static header_field_info hfi_dash_msg_blocktxn DASH_HFI_INIT =
   { "blocktxn message", "dash.blocktxn", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
-// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 static header_field_info hfi_msg_blocktxn_hash DASH_HFI_INIT =
   { "Block Hash", "dash.blocktxn.blockhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_blocktxn_tx_count8 DASH_HFI_INIT =
@@ -1020,12 +1006,10 @@ static header_field_info hfi_msg_blocktxn_tx_count32 DASH_HFI_INIT =
   { "Transactions Provided", "dash.blocktxn.txcount", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_blocktxn_tx_count64 DASH_HFI_INIT =
   { "Transactions Provided", "dash.blocktxn.txcount64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* cmpctblock message */
 static header_field_info hfi_dash_msg_cmpctblock DASH_HFI_INIT =
   { "cmpctblock message", "dash.cmpctblock", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
-// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 static header_field_info hfi_msg_cmpctblock_version DASH_HFI_INIT =
   { "Block version", "dash.cmpctblock.version", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_cmpctblock_prev_block DASH_HFI_INIT =
@@ -1070,12 +1054,10 @@ static header_field_info hfi_msg_cmpctblock_prefilledtx_index32 DASH_HFI_INIT =
   { "Prefilled Transaction Index", "dash.cmpctblock.prefilledtx.index", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_cmpctblock_prefilledtx_index64 DASH_HFI_INIT =
   { "Prefilled Transaction Index", "dash.cmpctblock.prefilledtx.index64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* getblocktxn message */
 static header_field_info hfi_dash_msg_getblocktxn DASH_HFI_INIT =
   { "getblocktxn message", "dash.getblocktxn", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 static header_field_info hfi_msg_getblocktxn_hash DASH_HFI_INIT =
   { "Block Hash", "dash.getblocktxn.blockhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_getblocktxn_tx_count8 DASH_HFI_INIT =
@@ -1094,17 +1076,14 @@ static header_field_info hfi_msg_getblocktxn_tx_index32 DASH_HFI_INIT =
   { "Index", "dash.getblocktxn.txindex", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_getblocktxn_tx_index64 DASH_HFI_INIT =
   { "Index", "dash.getblocktxn.txindex64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* sendcmpct message */
 static header_field_info hfi_dash_msg_sendcmpct DASH_HFI_INIT =
   { "sendcmpct message", "dash.sendcmpct", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 static header_field_info hfi_msg_sendcmpct_announce DASH_HFI_INIT =
   { "Block announce type", "dash.sendcmpct.announce", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_sendcmpct_version DASH_HFI_INIT =
   { "Compact block version", "dash.sendcmpct.version", FT_UINT64, BASE_HEX, NULL, 0x0, NULL, HFILL };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* variable string */
 static header_field_info hfi_string_value DASH_HFI_INIT =
@@ -1149,7 +1128,7 @@ static header_field_info hfi_dash_msg_subtx_username DASH_HFI_INIT =
   { "Username", "dash.subtx.payload.username", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* mnb - Masternode Broadcast
-	Whenever a masternode comes online or a client is syncing, 
+	Whenever a masternode comes online or a client is syncing,
 	they will send this message which describes the masternode entry and how to validate messages from it.
 
 	Field Size 	Field Name 			Data type 		Description
@@ -1208,7 +1187,7 @@ static header_field_info hfi_msg_mnp_vchsig DASH_HFI_INIT =
   { "Masternode Signature", "dash.mnp.vchsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* mnw - Masternode Payment Vote
-	When a new block is found on the network, a masternode quorum will be determined and 
+	When a new block is found on the network, a masternode quorum will be determined and
 	those 10 selected masternodes will issue a masternode payment vote message to pick the next winning node.
 
 	Field Size 	Field Name 	Data type 	Description
@@ -1298,10 +1277,10 @@ static header_field_info hfi_dash_msg_dssu_status_update DASH_HFI_INIT =
 static header_field_info hfi_dash_msg_dssu_message_id DASH_HFI_INIT =
   { "Message ID", "dash.dssu.message", FT_UINT32, BASE_DEC, VALS(pool_message), 0x0, NULL, HFILL };
 
-/* dsq message - Darksend Queue 
+/* dsq message - Darksend Queue
 	Field Size 	Field Name 	Data type 	Description
 	4 		nDenom 		int 		Which denomination is allowed in this mixing session
-	4 		nInputCount 		int 		Number of inputs required for this mixing session
+	4 		nInputCount 		int 		Number of inputs required for this mixing session (DEPRECATED)
 	36 		outpoint	COutPoint	The unspent output of the masternode which is signing the message
 	8 		nTime 		int64_t 		The time this DSQ was created
 	1 		fReady 		bool 		If the mixing pool is ready to be executed
@@ -1312,9 +1291,6 @@ static header_field_info hfi_dash_msg_dsq DASH_HFI_INIT =
 
 static header_field_info hfi_msg_dsq_denom DASH_HFI_INIT =
   { "Denomination", "dash.dsq.denom", FT_UINT32, BASE_DEC, VALS(private_send_denomination), 0x0, NULL, HFILL };
-
-static header_field_info hfi_msg_dsq_inputcount DASH_HFI_INIT =
-  { "Input Count", "dash.dsq.inputcount", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_dsq_outpoint DASH_HFI_INIT =
   { "Masternode collateral output", "dash.dsq.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -1353,7 +1329,7 @@ static header_field_info hfi_dash_msg_dsi DASH_HFI_INIT =
   { "Darksend Entry message", "dash.dsi", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* dsf - Darksend Final Transaction
-	
+
 */
 static header_field_info hfi_dash_msg_dsf DASH_HFI_INIT =
   { "Darksend Final Tx message", "dash.dsf", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -1362,7 +1338,7 @@ static header_field_info hfi_dash_msg_dsf_session_id DASH_HFI_INIT =
   { "Session ID", "dash.dsf.session", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
 /* dsc - Darksend Complete
-	
+
 */
 static header_field_info hfi_dash_msg_dsc DASH_HFI_INIT =
   { "Darksend Complete message", "dash.dsc", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -1399,13 +1375,11 @@ static header_field_info hfi_msg_txlvote_outpoint DASH_HFI_INIT =
 
 static header_field_info hfi_msg_txlvote_outpoint_masternode DASH_HFI_INIT =
   { "Masternode output", "dash.txlvote.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, "The utxo of the masternode which is signing the vote", HFILL };
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 static header_field_info hfi_msg_txlvote_quorumModHash DASH_HFI_INIT =
   { "Quorum Modifier hash", "dash.txlvote.quorumhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_txlvote_proTxHash DASH_HFI_INIT =
   { "Masternode ProRegTx hash", "dash.txlvote.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 static header_field_info hfi_msg_txlvote_vchsig DASH_HFI_INIT =
   { "Masternode Signature", "dash.txlvote.vchsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
@@ -1467,7 +1441,7 @@ static header_field_info hfi_msg_govobjvote_vchsig DASH_HFI_INIT =
 
 
 /* govsync - Governance Sync
-	
+
 */
 static header_field_info hfi_dash_msg_govsync DASH_HFI_INIT =
   { "Masternode Governance Sync message", "dash.govsync", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -1533,37 +1507,36 @@ static header_field_info hfi_dash_msg_mnget DASH_HFI_INIT =
 //static header_field_info hfi_dash_msg_mnget_count32 DASH_HFI_INIT =
 //  { "Count", "dash.mnget.count", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 /* getmnlistd message: */
-static header_field_info hfi_dash_msg_getmnlistd DASH_HFI_INIT = 
+static header_field_info hfi_dash_msg_getmnlistd DASH_HFI_INIT =
   { "getmnlistd message", "dash.getmnlistd", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_getmnlistd_baseblockhash DASH_HFI_INIT = 
+static header_field_info hfi_msg_getmnlistd_baseblockhash DASH_HFI_INIT =
   { "Base block hash", "dash.getmnlistd.baseblockhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_getmnlistd_blockhash DASH_HFI_INIT = 
+static header_field_info hfi_msg_getmnlistd_blockhash DASH_HFI_INIT =
   { "Block hash", "dash.getmnlistd.blockhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
-/* mnlistdiff message: */  
-static header_field_info hfi_dash_msg_mnlistdiff DASH_HFI_INIT = 
+/* mnlistdiff message: */
+static header_field_info hfi_dash_msg_mnlistdiff DASH_HFI_INIT =
   { "mnlistdiff message", "dash.mnlistdiff", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* senddsq message: */
-static header_field_info hfi_dash_msg_senddsq DASH_HFI_INIT = 
+static header_field_info hfi_dash_msg_senddsq DASH_HFI_INIT =
   { "senddsq message", "dash.senddsq", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_senddsq_enable DASH_HFI_INIT =
   { "PrivateSend participation", "dash.senddsq.enable", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
-  
+
 /* clsig message: */
-static header_field_info hfi_dash_msg_clsig DASH_HFI_INIT = 
+static header_field_info hfi_dash_msg_clsig DASH_HFI_INIT =
   { "clsig message", "dash.clsig", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_clsig_height DASH_HFI_INIT =
   { "Block Height", "dash.clsig.start_height", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_clsig_blockhash DASH_HFI_INIT = 
+static header_field_info hfi_msg_clsig_blockhash DASH_HFI_INIT =
   { "Block Hash", "dash.clsig.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_clsig_sig DASH_HFI_INIT = 
+static header_field_info hfi_msg_clsig_sig DASH_HFI_INIT =
   { "LLMQ BLS Signature", "dash.clsig.blssignature", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* islock message: */
-static header_field_info hfi_dash_msg_islock DASH_HFI_INIT = 
+static header_field_info hfi_dash_msg_islock DASH_HFI_INIT =
   { "islock message", "dash.islock", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_islock_input_count8 DASH_HFI_INIT =
   { "Number of inputs", "dash.islock.inputnum", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1575,27 +1548,27 @@ static header_field_info hfi_msg_islock_input_count64 DASH_HFI_INIT =
   { "Number of inputs", "dash.islock.inputnum64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_islock_inputs DASH_HFI_INIT =
   { "Inputs", "dash.islock.inputs", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_islock_txid DASH_HFI_INIT = 
+static header_field_info hfi_msg_islock_txid DASH_HFI_INIT =
   { "TXID", "dash.islock.txid", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_islock_sig DASH_HFI_INIT = 
+static header_field_info hfi_msg_islock_sig DASH_HFI_INIT =
   { "LLMQ BLS Signature", "dash.islock.blssignature", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* mnauth message: */
-static header_field_info hfi_dash_msg_mnauth DASH_HFI_INIT = 
+static header_field_info hfi_dash_msg_mnauth DASH_HFI_INIT =
   { "mnauth message", "dash.mnauth", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_mnauth_proregtx DASH_HFI_INIT = 
+static header_field_info hfi_msg_mnauth_proregtx DASH_HFI_INIT =
   { "ProRegTx Hash", "dash.mnauth.proregtx", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_mnauth_blssignature DASH_HFI_INIT = 
+static header_field_info hfi_msg_mnauth_blssignature DASH_HFI_INIT =
   { "Masternode BLS Signature", "dash.mnauth.blssignature", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* qcontrib message: */
-static header_field_info hfi_dash_msg_qcontrib DASH_HFI_INIT = 
+static header_field_info hfi_dash_msg_qcontrib DASH_HFI_INIT =
   { "qcontrib message", "dash.qcontrib", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qcontrib_llmq_type DASH_HFI_INIT =
   { "LLMQ Type", "dash.qcontrib.llmqtype", FT_UINT8, BASE_DEC, VALS(llmq_type), 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qcontrib_quorum_hash DASH_HFI_INIT = 
+static header_field_info hfi_msg_qcontrib_quorum_hash DASH_HFI_INIT =
   { "Quorum Hash", "dash.qcontrib.quorumhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qcontrib_protx_hash DASH_HFI_INIT = 
+static header_field_info hfi_msg_qcontrib_protx_hash DASH_HFI_INIT =
   { "ProRegTx Hash", "dash.qcontrib.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qcontrib_vvec_size8 DASH_HFI_INIT =
   { "Vector Size", "dash.qcontrib.vvecsize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1605,13 +1578,13 @@ static header_field_info hfi_msg_qcontrib_vvec_size32 DASH_HFI_INIT =
   { "Vector Size", "dash.qcontrib.vvecsize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qcontrib_vvec_size64 DASH_HFI_INIT =
   { "Vector Size", "dash.qcontrib.vvecsize64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qcontrib_vvec DASH_HFI_INIT = 
+static header_field_info hfi_msg_qcontrib_vvec DASH_HFI_INIT =
   { "Verification Vector", "dash.qcontrib.vvec", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qcontrib_vvec_key DASH_HFI_INIT = 
+static header_field_info hfi_msg_qcontrib_vvec_key DASH_HFI_INIT =
   { "Pubkey", "dash.qcontrib.vvec.key", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qcontrib_ephemeral_pubkey DASH_HFI_INIT = 
+static header_field_info hfi_msg_qcontrib_ephemeral_pubkey DASH_HFI_INIT =
   { "Ephemeral BLS Public Key", "dash.qcontrib.ephemeralpubkey", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qcontrib_iv DASH_HFI_INIT = 
+static header_field_info hfi_msg_qcontrib_iv DASH_HFI_INIT =
   { "IV Seed", "dash.qcontrib.iv", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qcontrib_sk_count8 DASH_HFI_INIT =
   { "Contribution count", "dash.qcontrib.skcount", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1631,13 +1604,13 @@ static header_field_info hfi_msg_qcontrib_sig DASH_HFI_INIT =
   { "BLS signature (Operator Key)", "dash.qcontrib.sig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* qcomplaint message */
-static header_field_info hfi_dash_msg_qcomplaint DASH_HFI_INIT = 
+static header_field_info hfi_dash_msg_qcomplaint DASH_HFI_INIT =
   { "qcomplaint message", "dash.qcomplaint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qcomplaint_llmq_type DASH_HFI_INIT =
   { "LLMQ Type", "dash.qcomplaint.llmqtype", FT_UINT8, BASE_DEC, VALS(llmq_type), 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qcomplaint_quorum_hash DASH_HFI_INIT = 
+static header_field_info hfi_msg_qcomplaint_quorum_hash DASH_HFI_INIT =
   { "Quorum Hash", "dash.qcomplaint.quorumhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qcomplaint_protx_hash DASH_HFI_INIT = 
+static header_field_info hfi_msg_qcomplaint_protx_hash DASH_HFI_INIT =
   { "ProRegTx Hash", "dash.qcomplaint.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qcomplaint_badbit_size8 DASH_HFI_INIT =
   { "Bad member bitvector size", "dash.qcomplaint.badbitsize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1647,7 +1620,7 @@ static header_field_info hfi_msg_qcomplaint_badbit_size32 DASH_HFI_INIT =
   { "Bad member bitvector size", "dash.qcomplaint.badbitsize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qcomplaint_badbit_size64 DASH_HFI_INIT =
   { "Bad member bitvector size", "dash.qcomplaint.badbitsize64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qcomplaint_badmembers DASH_HFI_INIT = 
+static header_field_info hfi_msg_qcomplaint_badmembers DASH_HFI_INIT =
   { "Bad members", "dash.qcomplaint.badmembers", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qcomplaint_complaintbit_size8 DASH_HFI_INIT =
   { "Complaints bitvector size", "dash.qcomplaint.complaintbitsize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1657,19 +1630,19 @@ static header_field_info hfi_msg_qcomplaint_complaintbit_size32 DASH_HFI_INIT =
   { "Complaints bitvector size", "dash.qcomplaint.complaintbitsize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qcomplaint_complaintbit_size64 DASH_HFI_INIT =
   { "Complaints bitvector size", "dash.qcomplaint.complaintbitsize64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qcomplaint_complaints DASH_HFI_INIT = 
+static header_field_info hfi_msg_qcomplaint_complaints DASH_HFI_INIT =
   { "Complaints", "dash.qcomplaint.complaints", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qcomplaint_sig DASH_HFI_INIT =
   { "BLS signature (Operator Key)", "dash.qcomplaint.sig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* qjustify */
-static header_field_info hfi_dash_msg_qjustify DASH_HFI_INIT = 
+static header_field_info hfi_dash_msg_qjustify DASH_HFI_INIT =
   { "qjustify message", "dash.qjustify", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qjustify_llmq_type DASH_HFI_INIT =
   { "LLMQ Type", "dash.qjustify.llmqtype", FT_UINT8, BASE_DEC, VALS(llmq_type), 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qjustify_quorum_hash DASH_HFI_INIT = 
+static header_field_info hfi_msg_qjustify_quorum_hash DASH_HFI_INIT =
   { "Quorum Hash", "dash.qjustify.quorumhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qjustify_protx_hash DASH_HFI_INIT = 
+static header_field_info hfi_msg_qjustify_protx_hash DASH_HFI_INIT =
   { "ProRegTx Hash", "dash.qjustify.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qjustify_sk_count8 DASH_HFI_INIT =
   { "Contribution count", "dash.qjustify.skcount", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1689,13 +1662,13 @@ static header_field_info hfi_msg_qjustify_sig DASH_HFI_INIT =
   { "BLS signature (Operator Key)", "dash.qjustify.sig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* qpcommit */
-static header_field_info hfi_dash_msg_qpcommit DASH_HFI_INIT = 
+static header_field_info hfi_dash_msg_qpcommit DASH_HFI_INIT =
   { "qpcommit message", "dash.qpcommit", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qpcommit_llmq_type DASH_HFI_INIT =
   { "LLMQ Type", "dash.qpcommit.llmqtype", FT_UINT8, BASE_DEC, VALS(llmq_type), 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qpcommit_quorum_hash DASH_HFI_INIT = 
+static header_field_info hfi_msg_qpcommit_quorum_hash DASH_HFI_INIT =
   { "Quorum Hash", "dash.qpcommit.quorumhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qpcommit_protx_hash DASH_HFI_INIT = 
+static header_field_info hfi_msg_qpcommit_protx_hash DASH_HFI_INIT =
   { "ProRegTx Hash", "dash.qpcommit.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qpcommit_validmember_size8 DASH_HFI_INIT =
   { "Valid member bitvector size", "dash.qpcommit.validmembersize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1705,11 +1678,11 @@ static header_field_info hfi_msg_qpcommit_validmember_size32 DASH_HFI_INIT =
   { "Valid member bitvector size", "dash.qpcommit.validmembersize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qpcommit_validmember_size64 DASH_HFI_INIT =
   { "Valid member bitvector size", "dash.qpcommit.validmembersize64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qpcommit_validmembers DASH_HFI_INIT = 
+static header_field_info hfi_msg_qpcommit_validmembers DASH_HFI_INIT =
   { "Valid members", "dash.qpcommit.validmembers", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qpcommit_quorum_pubkey DASH_HFI_INIT = 
+static header_field_info hfi_msg_qpcommit_quorum_pubkey DASH_HFI_INIT =
   { "Quorum BLS Public Key", "dash.qpcommit.quorumpubkey", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qpcommit_quorum_vvec_hash DASH_HFI_INIT = 
+static header_field_info hfi_msg_qpcommit_quorum_vvec_hash DASH_HFI_INIT =
   { "Quorum Verification Vector Hash", "dash.qpcommit.quorumvvechash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qpcommit_quorum_sig DASH_HFI_INIT =
   { "BLS Threshold signature", "dash.qpcommit.quorumsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -1717,13 +1690,13 @@ static header_field_info hfi_msg_qpcommit_sig DASH_HFI_INIT =
   { "BLS signature (Operator Key)", "dash.qpcommit.sig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* qfcommit */
-static header_field_info hfi_dash_msg_qfcommit DASH_HFI_INIT = 
+static header_field_info hfi_dash_msg_qfcommit DASH_HFI_INIT =
   { "qfcommit message", "dash.qfcommit", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qfcommit_version DASH_HFI_INIT =
   { "Message Version", "dash.qfcommit.version", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qfcommit_llmq_type DASH_HFI_INIT =
   { "LLMQ Type", "dash.qfcommit.llmqtype", FT_UINT8, BASE_DEC, VALS(llmq_type), 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qfcommit_quorum_hash DASH_HFI_INIT = 
+static header_field_info hfi_msg_qfcommit_quorum_hash DASH_HFI_INIT =
   { "Quorum Hash", "dash.qfcommit.quorumhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qfcommit_singers_size8 DASH_HFI_INIT =
   { "Signer bitvector size", "dash.qfcommit.singersize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1733,7 +1706,7 @@ static header_field_info hfi_msg_qfcommit_singers_size32 DASH_HFI_INIT =
   { "Signer bitvector size", "dash.qfcommit.singersize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qfcommit_singers_size64 DASH_HFI_INIT =
   { "Signer bitvector size", "dash.qfcommit.singersize64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qfcommit_singers DASH_HFI_INIT = 
+static header_field_info hfi_msg_qfcommit_singers DASH_HFI_INIT =
   { "Signers", "dash.qfcommit.singers", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qfcommit_validmember_size8 DASH_HFI_INIT =
   { "Valid member bitvector size", "dash.qfcommit.validmembersize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1743,11 +1716,11 @@ static header_field_info hfi_msg_qfcommit_validmember_size32 DASH_HFI_INIT =
   { "Valid member bitvector size", "dash.qfcommit.validmembersize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qfcommit_validmember_size64 DASH_HFI_INIT =
   { "Valid member bitvector size", "dash.qfcommit.validmembersize64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qfcommit_validmembers DASH_HFI_INIT = 
+static header_field_info hfi_msg_qfcommit_validmembers DASH_HFI_INIT =
   { "Valid members", "dash.qfcommit.validmembers", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qfcommit_quorum_pubkey DASH_HFI_INIT = 
+static header_field_info hfi_msg_qfcommit_quorum_pubkey DASH_HFI_INIT =
   { "Quorum BLS Public Key", "dash.qfcommit.quorumpubkey", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qfcommit_quorum_vvec_hash DASH_HFI_INIT = 
+static header_field_info hfi_msg_qfcommit_quorum_vvec_hash DASH_HFI_INIT =
   { "Quorum Verification Vector Hash", "dash.qfcommit.quorumvvechash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qfcommit_quorum_sig DASH_HFI_INIT =
   { "Quorum BLS Recovered Threshold Sig", "dash.qfcommit.quorumsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -1755,7 +1728,7 @@ static header_field_info hfi_msg_qfcommit_sig DASH_HFI_INIT =
   { "Quorum Aggregate BLS Sig", "dash.qfcommit.sig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* qbsigs */
-static header_field_info hfi_dash_msg_qbsigs DASH_HFI_INIT = 
+static header_field_info hfi_dash_msg_qbsigs DASH_HFI_INIT =
   { "qbsig message", "dash.qbsigs", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qbsigs_batchcount8 DASH_HFI_INIT =
   { "Number of signature share batches", "dash.qbsigs.batchcount", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1765,9 +1738,9 @@ static header_field_info hfi_msg_qbsigs_batchcount32 DASH_HFI_INIT =
   { "Number of signature share batches", "dash.qbsigs.batchcount", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qbsigs_batchcount64 DASH_HFI_INIT =
   { "Number of signature share batches", "dash.qbsigs.batchcount64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qbsigs_batched_sigshares DASH_HFI_INIT = 
+static header_field_info hfi_msg_qbsigs_batched_sigshares DASH_HFI_INIT =
   { "Signature share batch", "dash.qbsigs.bsigshare", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qbsigs_batched_sigshares_sessionid DASH_HFI_INIT = 
+static header_field_info hfi_msg_qbsigs_batched_sigshares_sessionid DASH_HFI_INIT =
   { "Session ID", "dash.qbsigs.bsigshare.id", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qbsigs_batched_sigshares_sharecount8 DASH_HFI_INIT =
   { "Share count", "dash.qbsigs.bsigshare.count", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1777,7 +1750,7 @@ static header_field_info hfi_msg_qbsigs_batched_sigshares_sharecount32 DASH_HFI_
   { "Share count", "dash.qbsigs.bsigshare.count", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qbsigs_batched_sigshares_sharecount64 DASH_HFI_INIT =
   { "Share count", "dash.qbsigs.bsigshare.count64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qbsigs_batched_sigshares_sigshares DASH_HFI_INIT = 
+static header_field_info hfi_msg_qbsigs_batched_sigshares_sigshares DASH_HFI_INIT =
   { "qsigsesann message", "dash.qbsigs.bsigshare.sigshare", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qbsigs_batched_sigshares_sigshares_index DASH_HFI_INIT =
   { "Index", "dash.qbsigs.bsigshare.sigshare.index", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1785,7 +1758,7 @@ static header_field_info hfi_msg_qbsigs_batched_sigshares_sigshares_sig DASH_HFI
   { "BLS signature share", "dash.qbsigs.bsigshare.sigshare.sig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* qgetsigs */
-static header_field_info hfi_dash_msg_qgetsigs DASH_HFI_INIT = 
+static header_field_info hfi_dash_msg_qgetsigs DASH_HFI_INIT =
   { "qgetsigs message", "dash.qgetsigs", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qgetsigs_count8 DASH_HFI_INIT =
   { "Count", "dash.qgetsigs.count", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1795,9 +1768,9 @@ static header_field_info hfi_msg_qgetsigs_count32 DASH_HFI_INIT =
   { "Count", "dash.qgetsigs.count", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qgetsigs_count64 DASH_HFI_INIT =
   { "Count", "dash.qgetsigs.count64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qgetsigs_sigs DASH_HFI_INIT = 
+static header_field_info hfi_msg_qgetsigs_sigs DASH_HFI_INIT =
   { "Signature share request", "dash.qgetsigs.sigs", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qgetsigs_sigs_sessionid DASH_HFI_INIT = 
+static header_field_info hfi_msg_qgetsigs_sigs_sessionid DASH_HFI_INIT =
   { "Session ID", "dash.qgetsigs.sigs.id", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qgetsigs_sigs_invsize8 DASH_HFI_INIT =
   { "Inventory size", "dash.qgetsigs.sigs.invsize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1807,31 +1780,31 @@ static header_field_info hfi_msg_qgetsigs_sigs_invsize32 DASH_HFI_INIT =
   { "Inventory size", "dash.qgetsigs.sigs.invsize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qgetsigs_sigs_invsize64 DASH_HFI_INIT =
   { "Inventory size", "dash.qgetsigs.sigs.invsize64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qgetsigs_sigs_inv DASH_HFI_INIT = 
+static header_field_info hfi_msg_qgetsigs_sigs_inv DASH_HFI_INIT =
   { "Inventory", "dash.qgetsigs.sigs.inv", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* qsendrecsigs message: */
-static header_field_info hfi_dash_msg_qsendrecsigs DASH_HFI_INIT = 
+static header_field_info hfi_dash_msg_qsendrecsigs DASH_HFI_INIT =
   { "qsendrecsigs message", "dash.qsendrecsigs", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qsendrecsigs_enable DASH_HFI_INIT =
   { "Request recovered signatures", "dash.qsendrecsigs.enable", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
 /* qsigrec */
-static header_field_info hfi_dash_msg_qsigrec DASH_HFI_INIT = 
+static header_field_info hfi_dash_msg_qsigrec DASH_HFI_INIT =
   { "qsigrec message", "dash.qsigrec", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qsigrec_llmq_type DASH_HFI_INIT =
   { "LLMQ type", "dash.qsigrec.llmqtype", FT_UINT8, BASE_DEC, VALS(llmq_type), 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qsigrec_quorumhash DASH_HFI_INIT = 
+static header_field_info hfi_msg_qsigrec_quorumhash DASH_HFI_INIT =
   { "Quorum Hash", "dash.qsigrec.quorumhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qsigrec_id DASH_HFI_INIT = 
+static header_field_info hfi_msg_qsigrec_id DASH_HFI_INIT =
   { "Signing Request ID", "dash.qsigrec.id", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qsigrec_msghash DASH_HFI_INIT = 
+static header_field_info hfi_msg_qsigrec_msghash DASH_HFI_INIT =
   { "Message Hash", "dash.qsigrec.msghash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qsigrec_sig DASH_HFI_INIT =
   { "LLMQ BLS Signature", "dash.qsigrec.sig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* qsigsesann */
-static header_field_info hfi_dash_msg_qsigsesann DASH_HFI_INIT = 
+static header_field_info hfi_dash_msg_qsigsesann DASH_HFI_INIT =
   { "qsigsesann message", "dash.qsigsesann", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qsigsesann_count8 DASH_HFI_INIT =
   { "Count", "dash.qsigsesann.count", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1841,21 +1814,21 @@ static header_field_info hfi_msg_qsigsesann_count32 DASH_HFI_INIT =
   { "Count", "dash.qsigsesann.count", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qsigsesann_count64 DASH_HFI_INIT =
   { "Count", "dash.qsigsesann.count64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qsigsesann_sesann DASH_HFI_INIT = 
+static header_field_info hfi_msg_qsigsesann_sesann DASH_HFI_INIT =
   { "Session Announcement", "dash.qsigsesann.sesann", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qsigsesann_sesann_sessionid DASH_HFI_INIT = 
+static header_field_info hfi_msg_qsigsesann_sesann_sessionid DASH_HFI_INIT =
   { "Session ID", "dash.qsigsesann.id", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qsigsesann_sesann_llmq_type DASH_HFI_INIT =
   { "LLMQ Type", "dash.qsigsesann.sesann.llmqtype", FT_UINT8, BASE_DEC, VALS(llmq_type), 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qsigsesann_sesann_quorum_hash DASH_HFI_INIT = 
+static header_field_info hfi_msg_qsigsesann_sesann_quorum_hash DASH_HFI_INIT =
   { "Quorum Hash", "dash.qsigsesann.sesann.quorumhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qsigsesann_sesann_request_id DASH_HFI_INIT = 
+static header_field_info hfi_msg_qsigsesann_sesann_request_id DASH_HFI_INIT =
   { "Signaling Request ID", "dash.qsigsesann.sesann.requestid", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qsigsesann_sesann_message_hash DASH_HFI_INIT = 
+static header_field_info hfi_msg_qsigsesann_sesann_message_hash DASH_HFI_INIT =
   { "Message Hash", "dash.qsigsesann.sesann.messagehash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* qsigsinv */
-static header_field_info hfi_dash_msg_qsigsinv DASH_HFI_INIT = 
+static header_field_info hfi_dash_msg_qsigsinv DASH_HFI_INIT =
   { "qsigsinv message", "dash.qsigsinv", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qsigsinv_count8 DASH_HFI_INIT =
   { "Count", "dash.qsigsinv.count", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1865,9 +1838,9 @@ static header_field_info hfi_msg_qsigsinv_count32 DASH_HFI_INIT =
   { "Count", "dash.qsigsinv.count", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qsigsinv_count64 DASH_HFI_INIT =
   { "Count", "dash.qsigsinv.count64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qsigsinv_sigs DASH_HFI_INIT = 
+static header_field_info hfi_msg_qsigsinv_sigs DASH_HFI_INIT =
   { "Signature share request", "dash.qsigsinv.sigs", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qsigsinv_sigs_sessionid DASH_HFI_INIT = 
+static header_field_info hfi_msg_qsigsinv_sigs_sessionid DASH_HFI_INIT =
   { "Session ID", "dash.qsigsinv.sigs.id", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qsigsinv_sigs_invsize8 DASH_HFI_INIT =
   { "Inventory size", "dash.qsigsinv.sigs.invsize", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
@@ -1877,9 +1850,8 @@ static header_field_info hfi_msg_qsigsinv_sigs_invsize32 DASH_HFI_INIT =
   { "Inventory size", "dash.qsigsinv.sigs.invsize", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qsigsinv_sigs_invsize64 DASH_HFI_INIT =
   { "Inventory size", "dash.qsigsinv.sigs.invsize64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-static header_field_info hfi_msg_qsigsinv_sigs_inv DASH_HFI_INIT = 
+static header_field_info hfi_msg_qsigsinv_sigs_inv DASH_HFI_INIT =
   { "Inventory", "dash.qsigsinv.sigs.inv", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 static gint ett_dash = -1;
 static gint ett_dash_msg = -1;
@@ -2296,7 +2268,6 @@ create_string_tree(proto_tree *tree, header_field_info* hfi, tvbuff_t *tvb, guin
   return subtree;
 }
 
-// jhhong add 19.07.11 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 #if 0
 static proto_tree *
 create_string(proto_tree *tree, tvbuff_t *tvb, guint32* offset)
@@ -2327,7 +2298,6 @@ create_string(proto_tree *tree, tvbuff_t *tvb, guint32* offset)
   return tree; //subtree;
 }
 #endif
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 static proto_tree *
 create_data_tree(proto_tree *tree, header_field_info* hfi, tvbuff_t *tvb, guint32* offset)
@@ -2359,44 +2329,6 @@ create_data_tree(proto_tree *tree, header_field_info* hfi, tvbuff_t *tvb, guint3
   return subtree;
 }
 
-// jhhong add 19.07.11 >>>>>>>>>>>>>>>>>>>>>>>>>>>
-#if 0
-/**
- * Create a sub-tree and fill it with a Blockchain User Register
- */
-static int //proto_tree *
-create_subtxregister_tree(tvbuff_t *tvb, proto_item *ti, guint32 offset)
-{
-  proto_tree *tree;
-  tree = proto_item_add_subtree(ti, ett_dash_msg);
-
-  // version	uint16_t	Register transaction version number
-  // userNameSize	compactSize uint	Length of the username
-  // userName	string	Username for the account
-  // pubkeySize	compactSize uint	Length of the public key
-  // pubkey	byte[]	Owner’s public key for the account
-  // sigSize	compactSize uint	Length of the signature
-  // sig	byte[]	Signature of the hash of the preceding fields signed by the blockchain user with the private key for the specified PubKey (65 bytes)
-
-  // Payload version
-  proto_tree_add_item(tree, &hfi_msg_specialtx_payload_version, tvb, offset, 2, ENC_LITTLE_ENDIAN);
-  offset += 2;
-
-  // Username
-  //create_string_tree(tree, &hfi_dash_msg_subtx_username, tvb, &offset);
-  create_string(tree, tvb, &offset);
-
-  // Pubkey hash (20 bytes)
-  //offset = create_cpubkey_tree(tree, tvb, ti, &hfi_msg_mnb_pubkey_collateral, offset);
-  proto_tree_add_item(tree, &hfi_msg_pubkey_hash, tvb, offset, 20, ENC_NA);
-  offset += 20;
-
-  // vchSig - Signature of this message
-  offset = create_signature_tree(tree, tvb, &hfi_msg_mnp_vchsig, offset);
-
-  return offset;
-}
-#endif
 /**
  * Get quorum session id
  */
@@ -2440,7 +2372,6 @@ static int get_quorum_sig_inventory(proto_tree *tree, tvbuff_t *tvb, gint offset
   }
   return offset;
 }
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* Note: A number of the following message handlers include code of the form:
  *          ...
@@ -2519,13 +2450,11 @@ dissect_dash_msg_version(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree
     proto_tree_add_item(tree, &hfi_msg_version_relay, tvb, offset, 1, ENC_LITTLE_ENDIAN);
     offset += 1;
   }
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
   if (version >= 70214)
   {
     proto_tree_add_item(tree, &hfi_msg_version_mn_challenge, tvb, offset, 32, ENC_NA);
     offset += 32;
   }
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   return offset;
 }
@@ -2745,8 +2674,6 @@ dissect_dash_msg_getheaders(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
   return offset;
 }
 
-// jhhong add 19.07.10 >>>>>>>>>>>>>>>>>>>>>>>>>>>
-// for special tx
 /**
  * Handler for qfcommit messages
  */
@@ -2801,7 +2728,7 @@ dissect_dash_msg_qfcommit_common(tvbuff_t *tvb, guint32 offset, proto_tree *tree
 
   proto_tree_add_item(tree, &hfi_msg_qfcommit_sig, tvb, offset, 96, ENC_NA);
   offset += 96;
-  
+
   return offset;
 }
 
@@ -2856,7 +2783,7 @@ dissect_dash_msg_tx_extra_ProRegTx(tvbuff_t *tvb, header_field_info* hfi, guint3
   offset += length;
   proto_tree_add_item(subtree, &hfi_msg_tx_extra_proregtx_payloadsig, tvb, offset, count, ENC_NA);
   offset += count;
-  
+
   return offset;
 }
 
@@ -2891,7 +2818,7 @@ dissect_dash_msg_tx_extra_ProUpServTx(tvbuff_t *tvb, header_field_info* hfi, gui
   offset += 32;
   proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupservtx_payloadsig, tvb, 96, count, ENC_NA);
   offset += 96;
-  
+
   return offset;
 }
 
@@ -2937,7 +2864,7 @@ dissect_dash_msg_tx_extra_ProUpRegTx(tvbuff_t *tvb, header_field_info* hfi, guin
   offset += length;
   proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupregtx_payloadsig, tvb, offset, count, ENC_NA);
   offset += count;
-  
+
   return offset;
 }
 
@@ -2960,7 +2887,7 @@ dissect_dash_msg_tx_extra_ProUpRevTx(tvbuff_t *tvb, header_field_info* hfi, guin
   offset += 32;
   proto_tree_add_item(subtree, &hfi_msg_tx_extra_prouprevtx_payloadsig, tvb, offset, 96, ENC_NA);
   offset += 96;
-  
+
   return offset;
 }
 
@@ -2981,7 +2908,7 @@ dissect_dash_msg_tx_extra_CbTx(tvbuff_t *tvb, header_field_info* hfi, guint32 of
   offset += 32;
   proto_tree_add_item(subtree, &hfi_msg_tx_extra_cbtx_merkle_quorum, tvb, offset, 32, ENC_BIG_ENDIAN);
   offset += 32;
-  
+
   return offset;
 }
 
@@ -2999,10 +2926,9 @@ dissect_dash_msg_tx_extra_QcTx(tvbuff_t *tvb, header_field_info* hfi, guint32 of
   proto_tree_add_item(subtree, &hfi_msg_tx_extra_qctx_height, tvb, offset, 4, ENC_NA);
   offset += 4;
   offset = dissect_dash_msg_qfcommit_common(tvb, offset, tree);
-  
+
   return offset;
 }
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /**
  * Handler for tx message body
@@ -3165,20 +3091,6 @@ dissect_dash_msg_tx_common(tvbuff_t *tvb, guint32 offset, packet_info *pinfo, pr
                     &hfi_msg_tx_extra_payload_size32, &hfi_msg_tx_extra_payload_size64);
     offset += count_length;
 
-// jhhong add 19.07.10 >>>>>>>>>>>>>>>>>>>>>>>>>>>
-#if 0
-    /* Extra Payload (eventually dissect these too) */
-    proto_tree_add_item(tree, &hfi_msg_tx_extra_payload, tvb, offset, (guint)extra_payload_size, ENC_NA);
-    //offset += extra_payload_size;
-
-    if (tx_type == 8)
-    {
-      rti = proto_tree_add_item(tree, &hfi_dash_msg_subtx, tvb, offset, -1, ENC_NA);
-      create_subtxregister_tree(tvb, rti, offset);
-    }
-    offset += extra_payload_size;
-  }
-#else
     switch(tx_type) {
       case 1:
       offset = dissect_dash_msg_tx_extra_ProRegTx(tvb, &hfi_msg_tx_extra_proregtx, offset, tree);
@@ -3202,8 +3114,6 @@ dissect_dash_msg_tx_common(tvbuff_t *tvb, guint32 offset, packet_info *pinfo, pr
       break;
     }
   }
-#endif
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   /* needed for block nesting */
   proto_item_set_len(rti, offset);
@@ -3518,16 +3428,6 @@ dissect_dash_msg_merkleblock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *
 static int
 dissect_dash_msg_blocktxn(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
 {
-// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
-#if 0
-  proto_item *ti;
-  guint32     offset = 0;
-
-  ti   = proto_tree_add_item(tree, &hfi_dash_msg_blocktxn, tvb, offset, -1, ENC_NA);
-  tree = proto_item_add_subtree(ti, ett_dash_msg);
-
-  return tvb_captured_length(tvb);
-#endif
   proto_item *ti;
   gint        length;
   guint64     count;
@@ -3559,7 +3459,6 @@ dissect_dash_msg_blocktxn(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tre
   }
 
   return offset;
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 }
 
 /**
@@ -3569,16 +3468,6 @@ dissect_dash_msg_blocktxn(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tre
 static int
 dissect_dash_msg_cmpctblock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
 {
-// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
-#if 0
-  proto_item *ti;
-  guint32     offset = 0;
-
-  ti   = proto_tree_add_item(tree, &hfi_dash_msg_cmpctblock, tvb, offset, -1, ENC_NA);
-  tree = proto_item_add_subtree(ti, ett_dash_msg);
-
-  return tvb_captured_length(tvb);
-#endif
   proto_item *ti;
   gint        length;
   guint64     count;
@@ -3617,7 +3506,7 @@ dissect_dash_msg_cmpctblock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
   offset += 4;
   proto_tree_add_item(tree, &hfi_msg_cmpctblock_shortids_nonce, tvb, offset, 8, ENC_LITTLE_ENDIAN);
   offset += 8;
-  
+
   get_varint(tvb, offset, &length, &count);
   add_varint_item(tree, tvb, offset, length, &hfi_msg_cmpctblock_shortids_count8, &hfi_msg_cmpctblock_shortids_count16,
                   &hfi_msg_cmpctblock_shortids_count32, &hfi_msg_cmpctblock_shortids_count64);
@@ -3651,7 +3540,6 @@ dissect_dash_msg_cmpctblock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
   }
 
   return offset;
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  
 }
 
 /**
@@ -3661,16 +3549,6 @@ dissect_dash_msg_cmpctblock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
 static int
 dissect_dash_msg_getblocktxn(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
 {
-// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
-#if 0
-  proto_item *ti;
-  guint32     offset = 0;
-
-  ti   = proto_tree_add_item(tree, &hfi_dash_msg_getblocktxn, tvb, offset, -1, ENC_NA);
-  tree = proto_item_add_subtree(ti, ett_dash_msg);
-
-  return tvb_captured_length(tvb);
-#endif
   proto_item *ti;
   gint        length;
   guint64     count;
@@ -3703,7 +3581,6 @@ dissect_dash_msg_getblocktxn(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *
   }
 
   return offset;
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< 
 }
 
 /**
@@ -3718,14 +3595,13 @@ dissect_dash_msg_sendcmpct(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tr
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_sendcmpct, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+
   proto_tree_add_item(tree, &hfi_msg_sendcmpct_announce, tvb, offset, 1, ENC_LITTLE_ENDIAN);
   offset += 1;
   proto_tree_add_item(tree, &hfi_msg_sendcmpct_version, tvb, offset, 8, ENC_LITTLE_ENDIAN);
   offset += 8;
 
   return offset;
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 }
 
 
@@ -3797,11 +3673,9 @@ dissect_dash_msg_dsq(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   2 =   1    Dash
   4 =   0.1  Dash
   8 =   0.01 Dash
+  16 =   0.001 Dash
   */
   proto_tree_add_item(tree, &hfi_msg_dsq_denom, tvb, offset, 4, ENC_LITTLE_ENDIAN);
-  offset += 4;
-
-  proto_tree_add_item(tree, &hfi_msg_dsq_inputcount, tvb, offset, 4, ENC_LITTLE_ENDIAN);
   offset += 4;
 
   // Add unspent output of the Masternode that signed the message (COutPoint)
@@ -4362,7 +4236,7 @@ dissect_dash_msg_txlvote(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree
 
   // Outpoint Masternode
   offset = create_coutputpoint_tree(tvb, ti, &hfi_msg_txlvote_outpoint_masternode, offset);
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+
   // Quorum Modifier
   proto_tree_add_item(tree, &hfi_msg_txlvote_quorumModHash, tvb, offset, 32, ENC_NA);
   offset += 32;
@@ -4370,7 +4244,6 @@ dissect_dash_msg_txlvote(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree
   // ProTx Hash
   proto_tree_add_item(tree, &hfi_msg_txlvote_proTxHash, tvb, offset, 32, ENC_NA);
   offset += 32;
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   // Signature
   offset = create_signature_tree(tree, tvb, &hfi_msg_txlvote_vchsig, offset);
@@ -4516,7 +4389,7 @@ dissect_dash_msg_spork(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, 
   proto_tree_add_item(tree, &hfi_dash_msg_spork_sigtime, tvb, offset, 8, ENC_LITTLE_ENDIAN);
   offset += 8;
 
-  // vchSig - 
+  // vchSig -
   offset = create_signature_tree(tree, tvb, &hfi_dash_msg_spork_vchsig, offset);
 
   return offset;
@@ -4615,7 +4488,6 @@ dissect_dash_heur(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void *dat
   return TRUE;
 }
 
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 /**
  * Handler for getmnlistd messages
  */
@@ -4862,7 +4734,7 @@ dissect_dash_msg_qcomplaint(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
 
   proto_tree_add_item(tree, &hfi_msg_qcomplaint_sig, tvb, offset, 96, ENC_NA);
   offset += 96;
-  
+
   return offset;
 }
 
@@ -4908,7 +4780,7 @@ dissect_dash_msg_qjustify(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tre
 
   proto_tree_add_item(tree, &hfi_msg_qjustify_sig, tvb, offset, 96, ENC_NA);
   offset += 96;
-  
+
   return offset;
 }
 
@@ -4956,7 +4828,7 @@ dissect_dash_msg_qpcommit(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tre
 
   proto_tree_add_item(tree, &hfi_msg_qpcommit_sig, tvb, offset, 96, ENC_NA);
   offset += 96;
-  
+
   return offset;
 }
 
@@ -5161,7 +5033,6 @@ dissect_dash_msg_qsigsinv(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tre
   }
   return offset;
 }
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 void
 proto_register_dash(void)
@@ -5192,9 +5063,7 @@ proto_register_dash(void)
     &hfi_msg_version_user_agent,
     &hfi_msg_version_start_height,
     &hfi_msg_version_relay,
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>  
     &hfi_msg_version_mn_challenge,
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<    
 
     /* addr message */
     &hfi_msg_addr_count8,
@@ -5298,7 +5167,6 @@ proto_register_dash(void)
     &hfi_msg_tx_extra_payload_size64,
     &hfi_msg_tx_extra_payload,
 
-  // jhhong add 19.07.10 >>>>>>>>>>>>>>>>>>>>>>>>>>>
   /* extra-payload: ProRegTx */
     &hfi_msg_tx_extra_proregtx,
     &hfi_msg_tx_extra_proregtx_version,
@@ -5357,7 +5225,7 @@ proto_register_dash(void)
     &hfi_msg_tx_extra_proupregtx_payloadsig_size32,
     &hfi_msg_tx_extra_proupregtx_payloadsig_size64,
     &hfi_msg_tx_extra_proupregtx_payloadsig,
-    
+
   /* extra-payload: ProUpRevTx */
     &hfi_msg_tx_extra_prouprevtx,
     &hfi_msg_tx_extra_prouprevtx_version,
@@ -5377,7 +5245,6 @@ proto_register_dash(void)
     &hfi_msg_tx_extra_qctx,
     &hfi_msg_tx_extra_qctx_version,
     &hfi_msg_tx_extra_qctx_height,
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     /* block message */
     &hfi_msg_block_transactions8,
@@ -5527,7 +5394,6 @@ proto_register_dash(void)
     /* dsq message */
     &hfi_dash_msg_dsq,
     &hfi_msg_dsq_denom,
-    &hfi_msg_dsq_inputcount,
     &hfi_msg_dsq_outpoint,
     &hfi_msg_dsq_vin_prev_outp_hash,
     &hfi_msg_dsq_vin_prev_outp_index,
@@ -5563,10 +5429,8 @@ proto_register_dash(void)
     &hfi_msg_txlvote_txhash,
     &hfi_msg_txlvote_outpoint,
     &hfi_msg_txlvote_outpoint_masternode,
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
     &hfi_msg_txlvote_quorumModHash,
     &hfi_msg_txlvote_proTxHash,
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     &hfi_msg_txlvote_vchsig,
 
     /* govobj message */
@@ -5616,16 +5480,14 @@ proto_register_dash(void)
 
     /* blocktxn message */
     &hfi_dash_msg_blocktxn,
-// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>    
     &hfi_msg_blocktxn_hash,
     &hfi_msg_blocktxn_tx_count8,
     &hfi_msg_blocktxn_tx_count16,
     &hfi_msg_blocktxn_tx_count32,
     &hfi_msg_blocktxn_tx_count64,
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
     /* cmpctblock message */
     &hfi_dash_msg_cmpctblock,
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
     &hfi_msg_cmpctblock_version,
     &hfi_msg_cmpctblock_prev_block,
     &hfi_msg_cmpctblock_merkle_root,
@@ -5648,11 +5510,9 @@ proto_register_dash(void)
     &hfi_msg_cmpctblock_prefilledtx_index16,
     &hfi_msg_cmpctblock_prefilledtx_index32,
     &hfi_msg_cmpctblock_prefilledtx_index64,
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     /* getblocktxn message */
     &hfi_dash_msg_getblocktxn,
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
     &hfi_msg_getblocktxn_hash,
     &hfi_msg_getblocktxn_tx_count8,
     &hfi_msg_getblocktxn_tx_count16,
@@ -5662,22 +5522,19 @@ proto_register_dash(void)
     &hfi_msg_getblocktxn_tx_index16,
     &hfi_msg_getblocktxn_tx_index32,
     &hfi_msg_getblocktxn_tx_index64,
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     /* sendcmpct message */
     &hfi_dash_msg_sendcmpct,
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
     &hfi_msg_sendcmpct_announce,
     &hfi_msg_sendcmpct_version,
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
     /* Special transactions */
     &hfi_msg_specialtx_payload_version,
 
     /* SubTx Register */
     &hfi_dash_msg_subtx,
     &hfi_dash_msg_subtx_username,
-	
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>	
+
 	/* getmnlisted: */
     &hfi_dash_msg_getmnlistd,
     &hfi_msg_getmnlistd_baseblockhash,
@@ -5685,11 +5542,11 @@ proto_register_dash(void)
 
   /* mnlistdiff: */
     &hfi_dash_msg_mnlistdiff,
-    
+
   /* senddsq message: */
     &hfi_dash_msg_senddsq,
     &hfi_msg_senddsq_enable,
-    
+
   /* clsig messsage: */
     &hfi_dash_msg_clsig,
     &hfi_msg_clsig_height,
@@ -5778,7 +5635,7 @@ proto_register_dash(void)
     &hfi_msg_qpcommit_quorum_vvec_hash,
     &hfi_msg_qpcommit_quorum_sig,
     &hfi_msg_qpcommit_sig,
-    
+
   /* qfcommit */
     &hfi_dash_msg_qfcommit,
     &hfi_msg_qfcommit_version,
@@ -5867,7 +5724,6 @@ proto_register_dash(void)
     &hfi_msg_qsigsinv_sigs_invsize32,
     &hfi_msg_qsigsinv_sigs_invsize64,
     &hfi_msg_qsigsinv_sigs_inv,
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   };
 #endif
 
@@ -6028,9 +5884,7 @@ proto_reg_handoff_dash(void)
   dissector_add_string("dash.command", "filterclear", command_handle);
   dissector_add_string("dash.command", "sendheaders", command_handle);
   dissector_add_string("dash.command", "getsporks", command_handle);
-// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
   dissector_add_string("dash.command", "qwatch", command_handle);
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   /* messages not implemented */
   /* command_handle = create_dissector_handle( dissect_dash_msg_empty, hfi_dash->id ); */
@@ -6038,7 +5892,6 @@ proto_reg_handoff_dash(void)
   dissector_add_string("dash.command", "submitorder", command_handle);
   dissector_add_string("dash.command", "reply", command_handle);
   dissector_add_string("dash.command", "alert", command_handle);
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
   command_handle = create_dissector_handle( dissect_dash_msg_getmnlistd, hfi_dash->id );
   dissector_add_string("dash.command", "getmnlistd", command_handle);
   command_handle = create_dissector_handle( dissect_dash_msg_mnlistdiff, hfi_dash->id );
@@ -6073,7 +5926,6 @@ proto_reg_handoff_dash(void)
   dissector_add_string("dash.command", "qsigsesann", command_handle);
   command_handle = create_dissector_handle( dissect_dash_msg_qsigsinv, hfi_dash->id );
   dissector_add_string("dash.command", "qsigsinv", command_handle);
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 }
 
 /*
