@@ -1329,7 +1329,7 @@ static header_field_info hfi_dash_msg_dsi DASH_HFI_INIT =
   { "Darksend Entry message", "dash.dsi", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 /* dsf - Darksend Final Transaction
-	
+
 */
 static header_field_info hfi_dash_msg_dsf DASH_HFI_INIT =
   { "Darksend Final Tx message", "dash.dsf", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -1338,7 +1338,7 @@ static header_field_info hfi_dash_msg_dsf_session_id DASH_HFI_INIT =
   { "Session ID", "dash.dsf.session", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
 /* dsc - Darksend Complete
-	
+
 */
 static header_field_info hfi_dash_msg_dsc DASH_HFI_INIT =
   { "Darksend Complete message", "dash.dsc", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -1441,7 +1441,7 @@ static header_field_info hfi_msg_govobjvote_vchsig DASH_HFI_INIT =
 
 
 /* govsync - Governance Sync
-	
+
 */
 static header_field_info hfi_dash_msg_govsync DASH_HFI_INIT =
   { "Masternode Governance Sync message", "dash.govsync", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -2729,7 +2729,7 @@ dissect_dash_msg_qfcommit_common(tvbuff_t *tvb, guint32 offset, proto_tree *tree
 
   proto_tree_add_item(tree, &hfi_msg_qfcommit_sig, tvb, offset, 96, ENC_NA);
   offset += 96;
-  
+
   return offset;
 }
 
@@ -2784,7 +2784,7 @@ dissect_dash_msg_tx_extra_ProRegTx(tvbuff_t *tvb, header_field_info* hfi, guint3
   offset += length;
   proto_tree_add_item(subtree, &hfi_msg_tx_extra_proregtx_payloadsig, tvb, offset, count, ENC_NA);
   offset += count;
-  
+
   return offset;
 }
 
@@ -2819,7 +2819,7 @@ dissect_dash_msg_tx_extra_ProUpServTx(tvbuff_t *tvb, header_field_info* hfi, gui
   offset += 32;
   proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupservtx_payloadsig, tvb, 96, count, ENC_NA);
   offset += 96;
-  
+
   return offset;
 }
 
@@ -2865,7 +2865,7 @@ dissect_dash_msg_tx_extra_ProUpRegTx(tvbuff_t *tvb, header_field_info* hfi, guin
   offset += length;
   proto_tree_add_item(subtree, &hfi_msg_tx_extra_proupregtx_payloadsig, tvb, offset, count, ENC_NA);
   offset += count;
-  
+
   return offset;
 }
 
@@ -2888,7 +2888,7 @@ dissect_dash_msg_tx_extra_ProUpRevTx(tvbuff_t *tvb, header_field_info* hfi, guin
   offset += 32;
   proto_tree_add_item(subtree, &hfi_msg_tx_extra_prouprevtx_payloadsig, tvb, offset, 96, ENC_NA);
   offset += 96;
-  
+
   return offset;
 }
 
@@ -2909,7 +2909,7 @@ dissect_dash_msg_tx_extra_CbTx(tvbuff_t *tvb, header_field_info* hfi, guint32 of
   offset += 32;
   proto_tree_add_item(subtree, &hfi_msg_tx_extra_cbtx_merkle_quorum, tvb, offset, 32, ENC_BIG_ENDIAN);
   offset += 32;
-  
+
   return offset;
 }
 
@@ -2927,7 +2927,7 @@ dissect_dash_msg_tx_extra_QcTx(tvbuff_t *tvb, header_field_info* hfi, guint32 of
   proto_tree_add_item(subtree, &hfi_msg_tx_extra_qctx_height, tvb, offset, 4, ENC_NA);
   offset += 4;
   offset = dissect_dash_msg_qfcommit_common(tvb, offset, tree);
-  
+
   return offset;
 }
 
@@ -3507,7 +3507,7 @@ dissect_dash_msg_cmpctblock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
   offset += 4;
   proto_tree_add_item(tree, &hfi_msg_cmpctblock_shortids_nonce, tvb, offset, 8, ENC_LITTLE_ENDIAN);
   offset += 8;
-  
+
   get_varint(tvb, offset, &length, &count);
   add_varint_item(tree, tvb, offset, length, &hfi_msg_cmpctblock_shortids_count8, &hfi_msg_cmpctblock_shortids_count16,
                   &hfi_msg_cmpctblock_shortids_count32, &hfi_msg_cmpctblock_shortids_count64);
@@ -4735,7 +4735,7 @@ dissect_dash_msg_qcomplaint(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
 
   proto_tree_add_item(tree, &hfi_msg_qcomplaint_sig, tvb, offset, 96, ENC_NA);
   offset += 96;
-  
+
   return offset;
 }
 
@@ -4781,7 +4781,7 @@ dissect_dash_msg_qjustify(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tre
 
   proto_tree_add_item(tree, &hfi_msg_qjustify_sig, tvb, offset, 96, ENC_NA);
   offset += 96;
-  
+
   return offset;
 }
 
@@ -4829,7 +4829,7 @@ dissect_dash_msg_qpcommit(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tre
 
   proto_tree_add_item(tree, &hfi_msg_qpcommit_sig, tvb, offset, 96, ENC_NA);
   offset += 96;
-  
+
   return offset;
 }
 
@@ -5226,7 +5226,7 @@ proto_register_dash(void)
     &hfi_msg_tx_extra_proupregtx_payloadsig_size32,
     &hfi_msg_tx_extra_proupregtx_payloadsig_size64,
     &hfi_msg_tx_extra_proupregtx_payloadsig,
-    
+
   /* extra-payload: ProUpRevTx */
     &hfi_msg_tx_extra_prouprevtx,
     &hfi_msg_tx_extra_prouprevtx_version,
@@ -5543,11 +5543,11 @@ proto_register_dash(void)
 
   /* mnlistdiff: */
     &hfi_dash_msg_mnlistdiff,
-    
+
   /* senddsq message: */
     &hfi_dash_msg_senddsq,
     &hfi_msg_senddsq_enable,
-    
+
   /* clsig messsage: */
     &hfi_dash_msg_clsig,
     &hfi_msg_clsig_height,
@@ -5636,7 +5636,7 @@ proto_register_dash(void)
     &hfi_msg_qpcommit_quorum_vvec_hash,
     &hfi_msg_qpcommit_quorum_sig,
     &hfi_msg_qpcommit_sig,
-    
+
   /* qfcommit */
     &hfi_dash_msg_qfcommit,
     &hfi_msg_qfcommit_version,
