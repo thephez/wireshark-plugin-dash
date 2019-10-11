@@ -1852,7 +1852,6 @@ static header_field_info hfi_msg_qsigsinv_sigs_invsize64 DASH_HFI_INIT =
   { "Inventory size", "dash.qsigsinv.sigs.invsize64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_qsigsinv_sigs_inv DASH_HFI_INIT =
   { "Inventory", "dash.qsigsinv.sigs.inv", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 static gint ett_dash = -1;
 static gint ett_dash_msg = -1;
