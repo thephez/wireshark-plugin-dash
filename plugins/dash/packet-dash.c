@@ -2330,44 +2330,6 @@ create_data_tree(proto_tree *tree, header_field_info* hfi, tvbuff_t *tvb, guint3
   return subtree;
 }
 
-// jhhong add 19.07.11 >>>>>>>>>>>>>>>>>>>>>>>>>>>
-#if 0
-/**
- * Create a sub-tree and fill it with a Blockchain User Register
- */
-static int //proto_tree *
-create_subtxregister_tree(tvbuff_t *tvb, proto_item *ti, guint32 offset)
-{
-  proto_tree *tree;
-  tree = proto_item_add_subtree(ti, ett_dash_msg);
-
-  // version	uint16_t	Register transaction version number
-  // userNameSize	compactSize uint	Length of the username
-  // userName	string	Username for the account
-  // pubkeySize	compactSize uint	Length of the public key
-  // pubkey	byte[]	Owner’s public key for the account
-  // sigSize	compactSize uint	Length of the signature
-  // sig	byte[]	Signature of the hash of the preceding fields signed by the blockchain user with the private key for the specified PubKey (65 bytes)
-
-  // Payload version
-  proto_tree_add_item(tree, &hfi_msg_specialtx_payload_version, tvb, offset, 2, ENC_LITTLE_ENDIAN);
-  offset += 2;
-
-  // Username
-  //create_string_tree(tree, &hfi_dash_msg_subtx_username, tvb, &offset);
-  create_string(tree, tvb, &offset);
-
-  // Pubkey hash (20 bytes)
-  //offset = create_cpubkey_tree(tree, tvb, ti, &hfi_msg_mnb_pubkey_collateral, offset);
-  proto_tree_add_item(tree, &hfi_msg_pubkey_hash, tvb, offset, 20, ENC_NA);
-  offset += 20;
-
-  // vchSig - Signature of this message
-  offset = create_signature_tree(tree, tvb, &hfi_msg_mnp_vchsig, offset);
-
-  return offset;
-}
-#endif
 /**
  * Get quorum session id
  */
@@ -3130,20 +3092,6 @@ dissect_dash_msg_tx_common(tvbuff_t *tvb, guint32 offset, packet_info *pinfo, pr
                     &hfi_msg_tx_extra_payload_size32, &hfi_msg_tx_extra_payload_size64);
     offset += count_length;
 
-// jhhong add 19.07.10 >>>>>>>>>>>>>>>>>>>>>>>>>>>
-#if 0
-    /* Extra Payload (eventually dissect these too) */
-    proto_tree_add_item(tree, &hfi_msg_tx_extra_payload, tvb, offset, (guint)extra_payload_size, ENC_NA);
-    //offset += extra_payload_size;
-
-    if (tx_type == 8)
-    {
-      rti = proto_tree_add_item(tree, &hfi_dash_msg_subtx, tvb, offset, -1, ENC_NA);
-      create_subtxregister_tree(tvb, rti, offset);
-    }
-    offset += extra_payload_size;
-  }
-#else
     switch(tx_type) {
       case 1:
       offset = dissect_dash_msg_tx_extra_ProRegTx(tvb, &hfi_msg_tx_extra_proregtx, offset, tree);
@@ -3167,8 +3115,6 @@ dissect_dash_msg_tx_common(tvbuff_t *tvb, guint32 offset, packet_info *pinfo, pr
       break;
     }
   }
-#endif
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   /* needed for block nesting */
   proto_item_set_len(rti, offset);
