@@ -184,6 +184,7 @@ static const value_string private_send_denomination[] =
   { 0x02, "1 DASH" },
   { 0x04, "0.1 DASH" },
   { 0x08, "0.01 DASH" },
+  { 0x10, "0.001 DASH" },
 };
 
 static const value_string pool_message[] =
@@ -1300,7 +1301,7 @@ static header_field_info hfi_dash_msg_dssu_message_id DASH_HFI_INIT =
 /* dsq message - Darksend Queue 
 	Field Size 	Field Name 	Data type 	Description
 	4 		nDenom 		int 		Which denomination is allowed in this mixing session
-	4 		nInputCount 		int 		Number of inputs required for this mixing session
+	4 		nInputCount 		int 		Number of inputs required for this mixing session (DEPRECATED)
 	36 		outpoint	COutPoint	The unspent output of the masternode which is signing the message
 	8 		nTime 		int64_t 		The time this DSQ was created
 	1 		fReady 		bool 		If the mixing pool is ready to be executed
@@ -1311,9 +1312,6 @@ static header_field_info hfi_dash_msg_dsq DASH_HFI_INIT =
 
 static header_field_info hfi_msg_dsq_denom DASH_HFI_INIT =
   { "Denomination", "dash.dsq.denom", FT_UINT32, BASE_DEC, VALS(private_send_denomination), 0x0, NULL, HFILL };
-
-static header_field_info hfi_msg_dsq_inputcount DASH_HFI_INIT =
-  { "Input Count", "dash.dsq.inputcount", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_dsq_outpoint DASH_HFI_INIT =
   { "Masternode collateral output", "dash.dsq.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -3796,11 +3794,9 @@ dissect_dash_msg_dsq(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, vo
   2 =   1    Dash
   4 =   0.1  Dash
   8 =   0.01 Dash
+  16 =   0.001 Dash
   */
   proto_tree_add_item(tree, &hfi_msg_dsq_denom, tvb, offset, 4, ENC_LITTLE_ENDIAN);
-  offset += 4;
-
-  proto_tree_add_item(tree, &hfi_msg_dsq_inputcount, tvb, offset, 4, ENC_LITTLE_ENDIAN);
   offset += 4;
 
   // Add unspent output of the Masternode that signed the message (COutPoint)
@@ -5526,7 +5522,6 @@ proto_register_dash(void)
     /* dsq message */
     &hfi_dash_msg_dsq,
     &hfi_msg_dsq_denom,
-    &hfi_msg_dsq_inputcount,
     &hfi_msg_dsq_outpoint,
     &hfi_msg_dsq_vin_prev_outp_hash,
     &hfi_msg_dsq_vin_prev_outp_index,
