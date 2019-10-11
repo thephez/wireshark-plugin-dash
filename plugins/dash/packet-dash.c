@@ -81,7 +81,6 @@ static const value_string inv_types[] =
   { 17, "MSG_GOVERNANCE_OBJECT" },
   { 18, "MSG_GOVERNANCE_OBJECT_VOTE" },
   { 19, "MSG_MASTERNODE_VERIFY" },
-  // jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
   { 20, "MSG_CMPCT_BLOCK" },
   { 21, "MSG_QUORUM_FINAL_COMMITMENT" },
   { 23, "MSG_QUORUM_CONTRIB" },
@@ -92,7 +91,6 @@ static const value_string inv_types[] =
   { 28, "MSG_QUORUM_RECOVERED_SIG" },
   { 29, "MSG_CLSIG" },
   { 30, "MSG_ISLOCK" },
-  // jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   { 0, NULL }
 };
 
@@ -242,12 +240,9 @@ static const value_string spork_description[] =
   { 10001, "SPORK_2_INSTANTSEND_ENABLED" },
   { 10002, "SPORK_3_INSTANTSEND_BLOCK_FILTERING" },
   { 10004, "SPORK_5_INSTANTSEND_MAX_VALUE" },
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
   { 10005, "SPORK_6_NEW_SIGS" },
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   { 10007, "DEPRECATED_SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT" },
   { 10008, "SPORK_9_SUPERBLOCKS_ENABLED" },
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>  
   { 10009, "DEPRECATED_SPORK_10_MASTERNODE_PAY_UPDATED_NODES" },
   { 10011, "SPORK_12_RECONSIDER_BLOCKS" },
   { 10012, "DEPRECATED_SPORK_13_OLD_SUPERBLOCK_FLAG" },
@@ -258,7 +253,6 @@ static const value_string spork_description[] =
   { 10017, "DEPRECATED_SPORK_18_QUORUM_DEBUG_ENABLED" },
   { 10018, "SPORK_19_CHAINLOCKS_ENABLED" },
   { 10019, "SPORK_20_INSTANTSEND_LLMQ_BASED" },
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 };
 
 static const value_string masternode_sync_item_id[] =
@@ -268,8 +262,6 @@ static const value_string masternode_sync_item_id[] =
   { -1, "MASTERNODE_SYNC_FAILED" },
   { 0, "MASTERNODE_SYNC_INITIAL" },
   { 1, "MASTERNODE_SYNC_SPORKS" },
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>  
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   { 2, "MASTERNODE_SYNC_LIST (DEPRECATED)" },
   { 3, "MASTERNODE_SYNC_MNW (DEPRECATED)" },
   { 4, "MASTERNODE_SYNC_GOVERNANCE" },
@@ -320,7 +312,6 @@ static const value_string special_tx_type[] =
   { 11, "Subscription - Account Close (SubTxCloseAccount)" },
 };
 
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>  
 static const value_string llmq_type[] =
 {
   // Defined in src/consensus/params.h
@@ -329,7 +320,6 @@ static const value_string llmq_type[] =
   { 3,   "LLMQ_400_85" },
   { 100, "LLMQ_5_60" },
 };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /*
  * Minimum dash identification header.
@@ -412,10 +402,9 @@ static header_field_info hfi_msg_version_start_height DASH_HFI_INIT =
 
 static header_field_info hfi_msg_version_relay DASH_HFI_INIT =
   { "Relay flag", "dash.version.relay", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 static header_field_info hfi_msg_version_mn_challenge DASH_HFI_INIT =
   { "Masternode Auth Challenge", "dash.version.mnchallenge", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* addr message */
 static header_field_info hfi_msg_addr_count8 DASH_HFI_INIT =
@@ -661,7 +650,6 @@ static header_field_info hfi_msg_tx_extra_payload_size64 DASH_HFI_INIT =
 static header_field_info hfi_msg_tx_extra_payload DASH_HFI_INIT =
   { "Extra Payload", "dash.tx.extra_payload", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
-// jhhong add 19.07.10 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 /* tx.proregtx */
 static header_field_info hfi_msg_tx_extra_proregtx DASH_HFI_INIT =
   { "ProRegTx Payload", "dash.tx.proregtx", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -807,7 +795,6 @@ static header_field_info hfi_msg_tx_extra_qctx_version DASH_HFI_INIT =
   { "Version", "dash.tx.qctx.version", FT_UINT16, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_tx_extra_qctx_height DASH_HFI_INIT =
   { "Block Height", "dash.tx.qctx.height", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* block message */
 static header_field_info hfi_msg_block_transactions8 DASH_HFI_INIT =
@@ -1009,7 +996,6 @@ static header_field_info hfi_address_port DASH_HFI_INIT =
 /* blocktxn message */
 static header_field_info hfi_dash_msg_blocktxn DASH_HFI_INIT =
   { "blocktxn message", "dash.blocktxn", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
-// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 static header_field_info hfi_msg_blocktxn_hash DASH_HFI_INIT =
   { "Block Hash", "dash.blocktxn.blockhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_blocktxn_tx_count8 DASH_HFI_INIT =
@@ -1020,12 +1006,10 @@ static header_field_info hfi_msg_blocktxn_tx_count32 DASH_HFI_INIT =
   { "Transactions Provided", "dash.blocktxn.txcount", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_blocktxn_tx_count64 DASH_HFI_INIT =
   { "Transactions Provided", "dash.blocktxn.txcount64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* cmpctblock message */
 static header_field_info hfi_dash_msg_cmpctblock DASH_HFI_INIT =
   { "cmpctblock message", "dash.cmpctblock", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
-// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 static header_field_info hfi_msg_cmpctblock_version DASH_HFI_INIT =
   { "Block version", "dash.cmpctblock.version", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_cmpctblock_prev_block DASH_HFI_INIT =
@@ -1070,12 +1054,10 @@ static header_field_info hfi_msg_cmpctblock_prefilledtx_index32 DASH_HFI_INIT =
   { "Prefilled Transaction Index", "dash.cmpctblock.prefilledtx.index", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_cmpctblock_prefilledtx_index64 DASH_HFI_INIT =
   { "Prefilled Transaction Index", "dash.cmpctblock.prefilledtx.index64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* getblocktxn message */
 static header_field_info hfi_dash_msg_getblocktxn DASH_HFI_INIT =
   { "getblocktxn message", "dash.getblocktxn", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 static header_field_info hfi_msg_getblocktxn_hash DASH_HFI_INIT =
   { "Block Hash", "dash.getblocktxn.blockhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_getblocktxn_tx_count8 DASH_HFI_INIT =
@@ -1094,17 +1076,14 @@ static header_field_info hfi_msg_getblocktxn_tx_index32 DASH_HFI_INIT =
   { "Index", "dash.getblocktxn.txindex", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_getblocktxn_tx_index64 DASH_HFI_INIT =
   { "Index", "dash.getblocktxn.txindex64", FT_UINT64, BASE_DEC, NULL, 0x0, NULL, HFILL };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* sendcmpct message */
 static header_field_info hfi_dash_msg_sendcmpct DASH_HFI_INIT =
   { "sendcmpct message", "dash.sendcmpct", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 static header_field_info hfi_msg_sendcmpct_announce DASH_HFI_INIT =
   { "Block announce type", "dash.sendcmpct.announce", FT_UINT8, BASE_DEC, NULL, 0x0, NULL, HFILL };
 static header_field_info hfi_msg_sendcmpct_version DASH_HFI_INIT =
   { "Compact block version", "dash.sendcmpct.version", FT_UINT64, BASE_HEX, NULL, 0x0, NULL, HFILL };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* variable string */
 static header_field_info hfi_string_value DASH_HFI_INIT =
@@ -1396,13 +1375,11 @@ static header_field_info hfi_msg_txlvote_outpoint DASH_HFI_INIT =
 
 static header_field_info hfi_msg_txlvote_outpoint_masternode DASH_HFI_INIT =
   { "Masternode output", "dash.txlvote.outpoint", FT_NONE, BASE_NONE, NULL, 0x0, "The utxo of the masternode which is signing the vote", HFILL };
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 static header_field_info hfi_msg_txlvote_quorumModHash DASH_HFI_INIT =
   { "Quorum Modifier hash", "dash.txlvote.quorumhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
 static header_field_info hfi_msg_txlvote_proTxHash DASH_HFI_INIT =
   { "Masternode ProRegTx hash", "dash.txlvote.protxhash", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 static header_field_info hfi_msg_txlvote_vchsig DASH_HFI_INIT =
   { "Masternode Signature", "dash.txlvote.vchsig", FT_BYTES, BASE_NONE, NULL, 0x0, NULL, HFILL };
 
@@ -1530,7 +1507,6 @@ static header_field_info hfi_dash_msg_mnget DASH_HFI_INIT =
 //static header_field_info hfi_dash_msg_mnget_count32 DASH_HFI_INIT =
 //  { "Count", "dash.mnget.count", FT_UINT32, BASE_DEC, NULL, 0x0, NULL, HFILL };
 
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 /* getmnlistd message: */
 static header_field_info hfi_dash_msg_getmnlistd DASH_HFI_INIT = 
   { "getmnlistd message", "dash.getmnlistd", FT_NONE, BASE_NONE, NULL, 0x0, NULL, HFILL };
@@ -2293,7 +2269,6 @@ create_string_tree(proto_tree *tree, header_field_info* hfi, tvbuff_t *tvb, guin
   return subtree;
 }
 
-// jhhong add 19.07.11 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 #if 0
 static proto_tree *
 create_string(proto_tree *tree, tvbuff_t *tvb, guint32* offset)
@@ -2324,7 +2299,6 @@ create_string(proto_tree *tree, tvbuff_t *tvb, guint32* offset)
   return tree; //subtree;
 }
 #endif
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 static proto_tree *
 create_data_tree(proto_tree *tree, header_field_info* hfi, tvbuff_t *tvb, guint32* offset)
@@ -2437,7 +2411,6 @@ static int get_quorum_sig_inventory(proto_tree *tree, tvbuff_t *tvb, gint offset
   }
   return offset;
 }
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /* Note: A number of the following message handlers include code of the form:
  *          ...
@@ -2516,13 +2489,11 @@ dissect_dash_msg_version(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree
     proto_tree_add_item(tree, &hfi_msg_version_relay, tvb, offset, 1, ENC_LITTLE_ENDIAN);
     offset += 1;
   }
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
   if (version >= 70214)
   {
     proto_tree_add_item(tree, &hfi_msg_version_mn_challenge, tvb, offset, 32, ENC_NA);
     offset += 32;
   }
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   return offset;
 }
@@ -2742,8 +2713,6 @@ dissect_dash_msg_getheaders(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
   return offset;
 }
 
-// jhhong add 19.07.10 >>>>>>>>>>>>>>>>>>>>>>>>>>>
-// for special tx
 /**
  * Handler for qfcommit messages
  */
@@ -2999,7 +2968,6 @@ dissect_dash_msg_tx_extra_QcTx(tvbuff_t *tvb, header_field_info* hfi, guint32 of
   
   return offset;
 }
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 /**
  * Handler for tx message body
@@ -3715,14 +3683,13 @@ dissect_dash_msg_sendcmpct(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tr
 
   ti   = proto_tree_add_item(tree, &hfi_dash_msg_sendcmpct, tvb, offset, -1, ENC_NA);
   tree = proto_item_add_subtree(ti, ett_dash_msg);
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+
   proto_tree_add_item(tree, &hfi_msg_sendcmpct_announce, tvb, offset, 1, ENC_LITTLE_ENDIAN);
   offset += 1;
   proto_tree_add_item(tree, &hfi_msg_sendcmpct_version, tvb, offset, 8, ENC_LITTLE_ENDIAN);
   offset += 8;
 
   return offset;
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 }
 
 
@@ -4357,7 +4324,7 @@ dissect_dash_msg_txlvote(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree
 
   // Outpoint Masternode
   offset = create_coutputpoint_tree(tvb, ti, &hfi_msg_txlvote_outpoint_masternode, offset);
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
+
   // Quorum Modifier
   proto_tree_add_item(tree, &hfi_msg_txlvote_quorumModHash, tvb, offset, 32, ENC_NA);
   offset += 32;
@@ -4365,7 +4332,6 @@ dissect_dash_msg_txlvote(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree
   // ProTx Hash
   proto_tree_add_item(tree, &hfi_msg_txlvote_proTxHash, tvb, offset, 32, ENC_NA);
   offset += 32;
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   // Signature
   offset = create_signature_tree(tree, tvb, &hfi_msg_txlvote_vchsig, offset);
@@ -4610,7 +4576,6 @@ dissect_dash_heur(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, void *dat
   return TRUE;
 }
 
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
 /**
  * Handler for getmnlistd messages
  */
@@ -5156,7 +5121,6 @@ dissect_dash_msg_qsigsinv(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tre
   }
   return offset;
 }
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 void
 proto_register_dash(void)
@@ -5187,9 +5151,7 @@ proto_register_dash(void)
     &hfi_msg_version_user_agent,
     &hfi_msg_version_start_height,
     &hfi_msg_version_relay,
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>  
     &hfi_msg_version_mn_challenge,
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<    
 
     /* addr message */
     &hfi_msg_addr_count8,
@@ -5293,7 +5255,6 @@ proto_register_dash(void)
     &hfi_msg_tx_extra_payload_size64,
     &hfi_msg_tx_extra_payload,
 
-  // jhhong add 19.07.10 >>>>>>>>>>>>>>>>>>>>>>>>>>>
   /* extra-payload: ProRegTx */
     &hfi_msg_tx_extra_proregtx,
     &hfi_msg_tx_extra_proregtx_version,
@@ -5372,7 +5333,6 @@ proto_register_dash(void)
     &hfi_msg_tx_extra_qctx,
     &hfi_msg_tx_extra_qctx_version,
     &hfi_msg_tx_extra_qctx_height,
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     /* block message */
     &hfi_msg_block_transactions8,
@@ -5557,10 +5517,8 @@ proto_register_dash(void)
     &hfi_msg_txlvote_txhash,
     &hfi_msg_txlvote_outpoint,
     &hfi_msg_txlvote_outpoint_masternode,
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
     &hfi_msg_txlvote_quorumModHash,
     &hfi_msg_txlvote_proTxHash,
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     &hfi_msg_txlvote_vchsig,
 
     /* govobj message */
@@ -5610,16 +5568,14 @@ proto_register_dash(void)
 
     /* blocktxn message */
     &hfi_dash_msg_blocktxn,
-// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>    
     &hfi_msg_blocktxn_hash,
     &hfi_msg_blocktxn_tx_count8,
     &hfi_msg_blocktxn_tx_count16,
     &hfi_msg_blocktxn_tx_count32,
     &hfi_msg_blocktxn_tx_count64,
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
     /* cmpctblock message */
     &hfi_dash_msg_cmpctblock,
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
     &hfi_msg_cmpctblock_version,
     &hfi_msg_cmpctblock_prev_block,
     &hfi_msg_cmpctblock_merkle_root,
@@ -5642,11 +5598,9 @@ proto_register_dash(void)
     &hfi_msg_cmpctblock_prefilledtx_index16,
     &hfi_msg_cmpctblock_prefilledtx_index32,
     &hfi_msg_cmpctblock_prefilledtx_index64,
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     /* getblocktxn message */
     &hfi_dash_msg_getblocktxn,
-// jhhong add 19.07.05 >>>>>>>>>>>>>>>>>>>>>>>>>>>
     &hfi_msg_getblocktxn_hash,
     &hfi_msg_getblocktxn_tx_count8,
     &hfi_msg_getblocktxn_tx_count16,
@@ -5656,22 +5610,19 @@ proto_register_dash(void)
     &hfi_msg_getblocktxn_tx_index16,
     &hfi_msg_getblocktxn_tx_index32,
     &hfi_msg_getblocktxn_tx_index64,
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     /* sendcmpct message */
     &hfi_dash_msg_sendcmpct,
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
     &hfi_msg_sendcmpct_announce,
     &hfi_msg_sendcmpct_version,
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
     /* Special transactions */
     &hfi_msg_specialtx_payload_version,
 
     /* SubTx Register */
     &hfi_dash_msg_subtx,
     &hfi_dash_msg_subtx_username,
-	
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>	
+
 	/* getmnlisted: */
     &hfi_dash_msg_getmnlistd,
     &hfi_msg_getmnlistd_baseblockhash,
@@ -5861,7 +5812,6 @@ proto_register_dash(void)
     &hfi_msg_qsigsinv_sigs_invsize32,
     &hfi_msg_qsigsinv_sigs_invsize64,
     &hfi_msg_qsigsinv_sigs_inv,
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   };
 #endif
 
@@ -6022,9 +5972,7 @@ proto_reg_handoff_dash(void)
   dissector_add_string("dash.command", "filterclear", command_handle);
   dissector_add_string("dash.command", "sendheaders", command_handle);
   dissector_add_string("dash.command", "getsporks", command_handle);
-// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
   dissector_add_string("dash.command", "qwatch", command_handle);
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   /* messages not implemented */
   /* command_handle = create_dissector_handle( dissect_dash_msg_empty, hfi_dash->id ); */
@@ -6032,7 +5980,6 @@ proto_reg_handoff_dash(void)
   dissector_add_string("dash.command", "submitorder", command_handle);
   dissector_add_string("dash.command", "reply", command_handle);
   dissector_add_string("dash.command", "alert", command_handle);
-// jhhong add 19.07.02 >>>>>>>>>>>>>>>>>>>>>>>>>>>
   command_handle = create_dissector_handle( dissect_dash_msg_getmnlistd, hfi_dash->id );
   dissector_add_string("dash.command", "getmnlistd", command_handle);
   command_handle = create_dissector_handle( dissect_dash_msg_mnlistdiff, hfi_dash->id );
@@ -6067,7 +6014,6 @@ proto_reg_handoff_dash(void)
   dissector_add_string("dash.command", "qsigsesann", command_handle);
   command_handle = create_dissector_handle( dissect_dash_msg_qsigsinv, hfi_dash->id );
   dissector_add_string("dash.command", "qsigsinv", command_handle);
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 }
 
 /*
