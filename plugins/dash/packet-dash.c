@@ -3483,16 +3483,6 @@ dissect_dash_msg_merkleblock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *
 static int
 dissect_dash_msg_blocktxn(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
 {
-// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
-#if 0
-  proto_item *ti;
-  guint32     offset = 0;
-
-  ti   = proto_tree_add_item(tree, &hfi_dash_msg_blocktxn, tvb, offset, -1, ENC_NA);
-  tree = proto_item_add_subtree(ti, ett_dash_msg);
-
-  return tvb_captured_length(tvb);
-#endif
   proto_item *ti;
   gint        length;
   guint64     count;
@@ -3524,7 +3514,6 @@ dissect_dash_msg_blocktxn(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tre
   }
 
   return offset;
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 }
 
 /**
@@ -3534,16 +3523,6 @@ dissect_dash_msg_blocktxn(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tre
 static int
 dissect_dash_msg_cmpctblock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
 {
-// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
-#if 0
-  proto_item *ti;
-  guint32     offset = 0;
-
-  ti   = proto_tree_add_item(tree, &hfi_dash_msg_cmpctblock, tvb, offset, -1, ENC_NA);
-  tree = proto_item_add_subtree(ti, ett_dash_msg);
-
-  return tvb_captured_length(tvb);
-#endif
   proto_item *ti;
   gint        length;
   guint64     count;
@@ -3616,7 +3595,6 @@ dissect_dash_msg_cmpctblock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
   }
 
   return offset;
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  
 }
 
 /**
@@ -3626,16 +3604,6 @@ dissect_dash_msg_cmpctblock(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *t
 static int
 dissect_dash_msg_getblocktxn(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *tree, void *data _U_)
 {
-// jhhong add 19.07.04 >>>>>>>>>>>>>>>>>>>>>>>>>>>
-#if 0
-  proto_item *ti;
-  guint32     offset = 0;
-
-  ti   = proto_tree_add_item(tree, &hfi_dash_msg_getblocktxn, tvb, offset, -1, ENC_NA);
-  tree = proto_item_add_subtree(ti, ett_dash_msg);
-
-  return tvb_captured_length(tvb);
-#endif
   proto_item *ti;
   gint        length;
   guint64     count;
@@ -3668,7 +3636,6 @@ dissect_dash_msg_getblocktxn(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *
   }
 
   return offset;
-// jhhong add end <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< 
 }
 
 /**
